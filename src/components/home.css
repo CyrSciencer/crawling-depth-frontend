@@ -1,0 +1,12 @@
+.player-container {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+}
+
+.game-window {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+}

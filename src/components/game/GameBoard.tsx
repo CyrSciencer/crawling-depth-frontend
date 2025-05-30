@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Cell, cellExit, levelBorder, ExitForm } from "../types/cells";
+import { Cell, cellExit, levelBorder, ExitForm } from "../../types/cells";
 import "./GameBoard.css";
 
-export const GameBoard: React.FC = () => {
+interface GameBoardProps {
+  onCellsChange?: (cells: Cell[]) => void;
+  playerPosition?: { row: number; col: number };
+}
+
+export const GameBoard: React.FC<GameBoardProps> = ({
+  onCellsChange,
+  playerPosition,
+}) => {
   const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
-  const [hoveredCell, setHoveredCell] = useState<Cell | null>(null);
   const [exitForm, setExitForm] = useState<ExitForm>("NESW"); // Default to 4 exits
   const [cells, setCells] = useState<Cell[]>(
     Array.from({ length: 81 }, (_, index) => ({
@@ -15,13 +22,30 @@ export const GameBoard: React.FC = () => {
   );
 
   useEffect(() => {
-    setCells(
-      cells.map((cell) => {
-        // Chain the cell modifications
-        return levelBorder(cellExit(cell, exitForm));
-      })
-    );
+    const updatedCells = cells.map((cell) => {
+      // Chain the cell modifications
+      return levelBorder(cellExit(cell, exitForm));
+    });
+    setCells(updatedCells);
+    if (onCellsChange) {
+      onCellsChange(updatedCells);
+    }
   }, [exitForm]); // Re-run when exit form changes
+
+  // Reset selection when player moves
+  useEffect(() => {
+    if (playerPosition) {
+      setSelectedCell(null);
+      const updatedCells = cells.map((cell) => ({
+        ...cell,
+        isSelected: false,
+      }));
+      setCells(updatedCells);
+      if (onCellsChange) {
+        onCellsChange(updatedCells);
+      }
+    }
+  }, [playerPosition]);
 
   const handleCellClick = (cell: Cell) => {
     // Reset all cells' selection state
@@ -30,15 +54,10 @@ export const GameBoard: React.FC = () => {
       isSelected: c.row === cell.row && c.col === cell.col,
     }));
     setCells(updatedCells);
+    if (onCellsChange) {
+      onCellsChange(updatedCells);
+    }
     setSelectedCell(cell);
-  };
-
-  const handleCellMouseEnter = (cell: Cell) => {
-    setHoveredCell(cell);
-  };
-
-  const handleCellMouseLeave = () => {
-    setHoveredCell(null);
   };
 
   const renderCellInfo = () => {
@@ -89,10 +108,15 @@ export const GameBoard: React.FC = () => {
                 : cell.type === "chest"
                 ? "chest"
                 : "floor"
-            } `}
+            } ${
+              cell.resources
+                ? Object.entries(cell.resources)
+                    .filter(([_, value]) => value === 9)
+                    .map(([key]) => key)
+                    .join(" ")
+                : ""
+            }`}
             onClick={() => handleCellClick(cell)}
-            onMouseEnter={() => handleCellMouseEnter(cell)}
-            onMouseLeave={handleCellMouseLeave}
           />
         ))}
       </div>

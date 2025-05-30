@@ -1,6 +1,5 @@
-import React from 'react';
-import { Container, Box } from '@mui/material';
-
+import React from "react";
+import { Container, Box } from "@mui/material";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,8 +7,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Container component="main" sx={{ mt: 4, mb: 4, flex: 1 }}>
         {children}
       </Container>
@@ -17,4 +15,4 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 };
 
-export default Layout; 
+export default Layout;
