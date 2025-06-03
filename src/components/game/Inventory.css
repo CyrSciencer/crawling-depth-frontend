@@ -1,0 +1,64 @@
+.inventory-container {
+  padding: 1rem;
+}
+
+.inventory-section {
+  margin-bottom: 1.5rem;
+}
+
+.inventory-section h2 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.inventory-section p {
+  margin: 0.25rem 0;
+}
+
+.equip-options {
+  margin: 1rem 0;
+}
+
+.equip-options h3 {
+  margin-bottom: 0.5rem;
+  color: #444;
+}
+
+.equip-button {
+  margin: 0.25rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.equip-button:hover {
+  background-color: #e8e8e8;
+}
+
+.equipped-item,
+.equipped-blocks,
+.equipped-consumable {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.equipped-item h3,
+.equipped-blocks h3,
+.equipped-consumable h3 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  margin-bottom: 1rem;
+}

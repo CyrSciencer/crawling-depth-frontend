@@ -8,12 +8,12 @@ interface Reward {
 }
 
 const REWARDS: Reward[] = [
-  { type: "resource", name: "iron", value: 1, chance: [0, 10] },
-  { type: "resource", name: "silver", value: 1, chance: [10, 20] },
-  { type: "resource", name: "gold", value: 1, chance: [20, 30] },
-  { type: "resource", name: "tin", value: 1, chance: [30, 40] },
-  { type: "resource", name: "zinc", value: 1, chance: [40, 50] },
-  { type: "resource", name: "crystal", value: 1, chance: [50, 60] },
+  { type: "resource", name: "iron", value: 4, chance: [0, 10] },
+  { type: "resource", name: "silver", value: 4, chance: [10, 20] },
+  { type: "resource", name: "gold", value: 4, chance: [20, 30] },
+  { type: "resource", name: "tin", value: 4, chance: [30, 40] },
+  { type: "resource", name: "zinc", value: 4, chance: [40, 50] },
+  { type: "resource", name: "crystal", value: 4, chance: [50, 60] },
   { type: "consumable", name: "health", value: 10, chance: [60, 70] },
   { type: "consumable", name: "charge", value: 10, chance: [70, 80] },
   { type: "consumable", name: "power", value: 10, chance: [80, 90] },

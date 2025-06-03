@@ -44,7 +44,9 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
 }) => {
   const playerRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState<Direction>(Direction.RIGHT);
-  const [pendingMovement, setPendingMovement] = useState<Position | null>(null);
+  const [showActionPopup, setShowActionPopup] = useState(false);
+  const [actionPosition, setActionPosition] = useState({ x: 0, y: 0 });
+  const [actionType, setActionType] = useState<string>("");
 
   // Function to get cell at a position
   const getCellAtPosition = (pos: Position): Cell | undefined => {
@@ -67,6 +69,62 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
     }
   };
 
+  const checkPossibleAction = () => {
+    const facingCell = getFacingCell(position, rotation);
+    const cell = getCellAtPosition(facingCell);
+
+    console.log("Checking possible action:", {
+      facingCell,
+      cell,
+      equipped: player.inventory.equiped,
+    });
+
+    if (!cell) {
+      setShowActionPopup(false);
+      return;
+    }
+
+    // Calculer la position du pop-up basée sur la position du joueur
+    const popupX = position.col * 47.5 + 37;
+    const popupY = position.row * 47.5 - 37;
+    setActionPosition({ x: popupX, y: popupY });
+
+    // Vérifier les équipements du joueur
+    const equippedItems = player.inventory.equiped || {};
+
+    // Vérifier si le joueur a une pioche équipée et fait face à un mur
+    if (
+      cell.type === "wall" &&
+      "pickaxe" in equippedItems &&
+      equippedItems.pickaxe !== undefined &&
+      equippedItems.pickaxe.charge > 0
+    ) {
+      console.log("Can mine wall");
+      setActionType("mine");
+      setShowActionPopup(true);
+      return;
+    }
+
+    // Vérifier si le joueur a un bloc équipé et fait face à un sol
+    const blockType = Object.keys(equippedItems).find((key) =>
+      key.endsWith("Block")
+    );
+    if (cell.type === "floor" && blockType && blockType in equippedItems) {
+      console.log("Can place block:", blockType);
+      setActionType("place");
+      setShowActionPopup(true);
+      return;
+    }
+
+    console.log("No action possible");
+    setShowActionPopup(false);
+  };
+
+  // Appeler checkPossibleAction à chaque changement de position ou rotation
+  useEffect(() => {
+    checkPossibleAction();
+  }, [position, rotation, player.inventory.equiped]);
+
   const handleAction = () => {
     const facingCell = getFacingCell(position, rotation);
     const cell = getCellAtPosition(facingCell);
@@ -76,7 +134,6 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
         mineCell(cell, player);
         onCellsChange([...cells]);
       } else if (cell.type === "floor") {
-        // Vérifier si un bloc est équipé
         const blockType = Object.keys(player.inventory.equiped || {}).find(
           (key) => key.endsWith("Block")
         );
@@ -86,27 +143,20 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
           player.inventory.equiped &&
           blockType in player.inventory.equiped
         ) {
-          // Convertir le type de bloc en type de ressource (ex: stoneBlock -> stone)
           const resourceType = (blockType as string).replace(
             "Block",
             ""
           ) as keyof Cell["resources"];
-
-          // Mettre à jour la cellule
           cell.type = "wall";
           cell.resources = {
             stone: 0,
             [resourceType]: 9,
           };
 
-          // Décrémenter le bloc équipé
           const equippedBlock = player.inventory.equiped as Block;
           equippedBlock[blockType as keyof Block] =
             (equippedBlock[blockType as keyof Block] || 0) - 1;
-
-          // Mettre à jour la grille
           onCellsChange([...cells]);
-          // Notifier l'utilisation du bloc
           onBlockUse();
         }
       }
@@ -135,27 +185,15 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
       if (onShowInfo) onShowInfo(false);
       if (onCellSelect) onCellSelect(null);
 
-      // If player is not already facing the right direction
+      // Rotation toujours possible
       if (rotation !== direction) {
-        // Rotate player
         setRotation(direction);
-        // Calculate and store potential position
-        const facingCell = getFacingCell(position, direction);
-        if (canMoveToCell(getCellAtPosition(facingCell))) {
-          setPendingMovement(facingCell);
-        }
-      } else {
-        // If player is already facing the right direction, check for pending movement
-        if (pendingMovement) {
-          onPositionChange(pendingMovement);
-          setPendingMovement(null);
-        } else {
-          // Otherwise, calculate and perform movement directly
-          const facingCell = getFacingCell(position, direction);
-          if (canMoveToCell(getCellAtPosition(facingCell))) {
-            onPositionChange(facingCell);
-          }
-        }
+      }
+
+      // Déplacement uniquement si la cellule en face est valide
+      const facingCell = getFacingCell(position, direction);
+      if (canMoveToCell(getCellAtPosition(facingCell))) {
+        onPositionChange(facingCell);
       }
     };
 
@@ -166,7 +204,6 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
     onPositionChange,
     cells,
     rotation,
-    pendingMovement,
     onShowInfo,
     onCellSelect,
     onCellsChange,
@@ -175,18 +212,40 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
   const pixelPosition = gridToPixel(position);
 
   return (
-    <div
-      ref={playerRef}
-      className={`player direction-${rotation}`}
-      style={
-        {
-          "--player-x": `${pixelPosition.x}px`,
-          "--player-y": `${pixelPosition.y}px`,
-          "--player-rotation": `${rotation}deg`,
-        } as React.CSSProperties
-      }
-    >
-      <div className="player-front" />
+    <div className="player-pawn">
+      <div
+        ref={playerRef}
+        className={`player direction-${rotation}`}
+        style={
+          {
+            "--player-x": `${pixelPosition.x}px`,
+            "--player-y": `${pixelPosition.y}px`,
+            "--player-rotation": `${rotation}deg`,
+          } as React.CSSProperties
+        }
+      >
+        <div className="player-front" />
+      </div>
+
+      {showActionPopup && (
+        <div
+          className="action-popup"
+          style={{
+            position: "absolute",
+            left: `${actionPosition.x}px`,
+            top: `${actionPosition.y}px`,
+            transform: "translate(-50%, -50%)",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            color: "white",
+            padding: "8px 16px",
+            borderRadius: "4px",
+            zIndex: 1000,
+            pointerEvents: "none", // Empêche le pop-up d'interférer avec les clics
+          }}
+        >
+          {actionType === "mine" ? "Mine Wall" : "Place Block"}
+        </div>
+      )}
     </div>
   );
 };

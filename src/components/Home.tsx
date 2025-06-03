@@ -3,7 +3,7 @@ import { Container, Typography, Box } from "@mui/material";
 import { GameBoard } from "./game/GameBoard";
 import { MapCreator } from "./mapCreator/MapCreator";
 import PlayerPawn from "./game/PlayerPawn";
-import { Position } from "../types/player";
+import { Inventory, Position } from "../types/player";
 import { Cell } from "../types/cells";
 import Player from "../types/player";
 import { InventoryWindow } from "./game/Inventory";
@@ -23,7 +23,7 @@ const Home: React.FC = () => {
       blocks: { stoneBlock: 0 },
       consumables: null,
       tools: { pickaxe: { charge: 10, power: 1, bonus: "none" } },
-      equiped: { charge: 10, power: 1, bonus: "none" },
+      equiped: { pickaxe: { charge: 10, power: 1, bonus: "none" } },
     },
     modifiedMaps: [],
     position: { row: 4, col: 4 },
@@ -31,7 +31,12 @@ const Home: React.FC = () => {
     movementPerTurn: 5,
     health: 100,
   });
-
+  const handleInventoryChange = (newInventory: Inventory) => {
+    setPlayer((prev) => ({
+      ...prev,
+      inventory: newInventory,
+    }));
+  };
   const handlePositionChange = (newPosition: Position) => {
     setPlayerPosition(newPosition);
   };
@@ -97,7 +102,10 @@ const Home: React.FC = () => {
               />
             </div>
           </div>
-          <InventoryWindow inventory={player.inventory} />
+          <InventoryWindow
+            inventory={player.inventory}
+            onInventoryChange={handleInventoryChange}
+          />
         </div>
         <MapCreator />
       </Box>

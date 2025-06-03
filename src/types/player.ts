@@ -1,15 +1,15 @@
 import { Cell } from "./cells";
 
-interface Tool {
+export interface Tool {
   charge: number;
   power: number;
   bonus: string;
 }
-interface consumable {
+export interface Consumable {
   impactStat: string;
   quantity: number;
 }
-interface Resource {
+export interface Resource {
   stone: number;
   iron?: number;
   silver?: number;
@@ -18,7 +18,7 @@ interface Resource {
   zinc?: number;
   crystal?: number;
 }
-interface Block {
+export interface Block {
   stoneBlock?: number;
   ironBlock?: number;
   silverBlock?: number;
@@ -30,11 +30,21 @@ interface Block {
 export interface Inventory {
   resources: Resource | null;
   blocks: Block | null;
-  consumables: consumable[] | null;
+  consumables: Consumable[] | null;
   tools: {
     pickaxe: Tool;
   } | null;
-  equiped: Tool | Block | null;
+  equiped:
+    | {
+        pickaxe?: Tool;
+      }
+    | {
+        block?: Block;
+      }
+    | {
+        consumable?: Consumable;
+      }
+    | null;
 }
 
 interface Player {
@@ -100,8 +110,9 @@ const canMine = (cell: Cell, player: Player): boolean => {
   return (
     cell.type === "wall" &&
     player.inventory.equiped !== null &&
-    "charge" in player.inventory.equiped &&
-    player.inventory.equiped.charge > 0
+    "pickaxe" in player.inventory.equiped &&
+    player.inventory.equiped.pickaxe !== undefined &&
+    player.inventory.equiped.pickaxe.charge > 0
   );
 };
 
@@ -132,8 +143,12 @@ const mineCell = (cell: Cell, player: Player): void => {
   }
 
   // Réduire la charge de la pioche
-  if (player.inventory.equiped && "charge" in player.inventory.equiped) {
-    player.inventory.equiped.charge -= 1;
+  if (
+    player.inventory.equiped !== null &&
+    "pickaxe" in player.inventory.equiped &&
+    player.inventory.equiped.pickaxe !== undefined
+  ) {
+    player.inventory.equiped.pickaxe.charge -= 1;
   }
 
   // Transformer le mur en sol

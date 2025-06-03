@@ -5,10 +5,12 @@ import { ExitFormSelector } from "./ExitFormSelector";
 import { CellTypeSelector } from "./CellTypeSelector";
 import { ResourceSelector } from "./ResourceSelector";
 import { RESOURCE_VALUES, ResourceType } from "../../utils/resourceConfig";
+import axios from "axios";
 
 export const MapCreator: React.FC = () => {
   const [exitForm, setExitForm] = useState<ExitForm>("NESW");
   const [chest, setChest] = useState<boolean>(false);
+  const [mapSaved, setMapSaved] = useState<boolean>(false);
   // Current modification parameters
   const [currentType, setCurrentType] = useState<Cell["type"]>("floor");
   const [currentResource, setCurrentResource] = useState<ResourceType>("stone");
@@ -47,10 +49,36 @@ export const MapCreator: React.FC = () => {
       }
       return { ...c, isSelected: false };
     });
-
     setCells(updatedCells);
   };
-
+  const saveMap = async () => {
+    const map = {
+      name: `${exitForm}-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
+      cells: cells,
+      exits: {
+        up: exitForm.includes("N"),
+        down: exitForm.includes("S"),
+        left: exitForm.includes("W"),
+        right: exitForm.includes("E"),
+      },
+      chest: chest,
+    };
+    console.log(map);
+    try {
+      await axios
+        .post(`http://localhost:3001/api/baseMap`, map)
+        .then((response) => {
+          console.log(response);
+        });
+      setMapSaved(true);
+      setTimeout(() => {
+        setMapSaved(false);
+      }, 3000);
+      setCells(createInitialCells(exitForm));
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="game-board">
       <div className="map-creator-container">
@@ -69,6 +97,8 @@ export const MapCreator: React.FC = () => {
           <input type="checkbox" onChange={() => setChest(!chest)} />
           <span>chest</span>
         </div>
+        <button onClick={() => saveMap()}>save map</button>
+        {mapSaved && <span>map saved</span>}
       </div>
       <div className="grid-container">
         {cells.map((cell) => (
@@ -87,7 +117,11 @@ export const MapCreator: React.FC = () => {
                 ? "chest"
                 : "floor"
             } `}
-            onClick={() => handleCellClick(cell)}
+            onClick={() => {
+              if (cell.type === "unbreakable") return;
+              if (cell.type === "exit") return;
+              handleCellClick(cell);
+            }}
           />
         ))}
       </div>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Cell } from "../../types/cells";
 import { ResourceType, RESOURCE_TYPES } from "../../utils/resourceConfig";
 
@@ -11,16 +11,20 @@ export const ResourceSelector: React.FC<ResourceSelectorProps> = ({
   resources,
   onChange,
 }) => {
-  const currentResource =
-    (Object.keys(resources || {})[0] as ResourceType) || "stone";
+  const [selectedResource, setSelectedResource] = useState<ResourceType>(
+    (Object.keys(resources || {})[0] as ResourceType) || "stone"
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newResource = e.target.value as ResourceType;
+    setSelectedResource(newResource);
+    onChange(newResource);
+  };
 
   return (
     <div className="resource-selector">
       <h3>resources</h3>
-      <select
-        value={currentResource}
-        onChange={(e) => onChange(e.target.value as ResourceType)}
-      >
+      <select value={selectedResource} onChange={handleChange}>
         {RESOURCE_TYPES.map((resource) => (
           <option key={resource} value={resource}>
             {resource}

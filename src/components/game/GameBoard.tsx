@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Cell, cellExit, levelBorder, ExitForm } from "../../types/cells";
 import "./GameBoard.css";
+import axios from "axios";
 
 interface GameBoardProps {
   onCellsChange?: (cells: Cell[]) => void;
@@ -11,6 +12,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   onCellsChange,
   playerPosition,
 }) => {
+  const [mapChanged, setMapChanged] = useState<boolean>(false);
   const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
   const [exitForm, setExitForm] = useState<ExitForm>("NESW"); // Default to 4 exits
   const [cells, setCells] = useState<Cell[]>(
@@ -22,15 +24,30 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   );
 
   useEffect(() => {
-    const updatedCells = cells.map((cell) => {
-      // Chain the cell modifications
-      return levelBorder(cellExit(cell, exitForm));
-    });
-    setCells(updatedCells);
-    if (onCellsChange) {
-      onCellsChange(updatedCells);
-    }
-  }, [exitForm]); // Re-run when exit form changes
+    const getBaseMap = async () => {
+      try {
+        const { data: baseMap } = await axios.get(
+          "http://localhost:3001/api/baseMap",
+          {
+            params: { exitForm },
+          }
+        );
+        console.log("Base map loaded:", baseMap);
+        setCells(baseMap.cells);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error(
+            "Failed to load base map:",
+            error.response?.data || error.message
+          );
+        } else {
+          console.error("Unexpected error:", error);
+        }
+      }
+    };
+
+    getBaseMap();
+  }, [exitForm, mapChanged]); // Re-run when exit form changes
 
   // Reset selection when player moves
   useEffect(() => {

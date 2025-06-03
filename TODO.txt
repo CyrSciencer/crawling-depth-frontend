@@ -1,0 +1,4 @@
+block placement.
+pickaxe charge permanence!
+crafting system.
+saving the map in modified map then using the modified map as the array to render the lvl.

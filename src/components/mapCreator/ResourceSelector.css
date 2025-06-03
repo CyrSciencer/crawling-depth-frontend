@@ -1,0 +1,36 @@
+.resource-selector {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.resource-selector h3 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.resource-input {
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.resource-input label {
+  min-width: 80px;
+  color: #444;
+}
+
+.resource-input input {
+  padding: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 60px;
+}
+
+.resource-input input:focus {
+  outline: none;
+  border-color: #666;
+}
