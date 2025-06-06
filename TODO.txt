@@ -1,4 +1,8 @@
-block placement.
-pickaxe charge permanence!
-crafting system.
+block placement. DONE////////////
+pickaxe charge permanence!DONE//////////////
+crafting system for consummables.
+player creation to backend.
+get player info via cookie vs via personnal code:
+--if via personnal code: either new character or input code to get player.(not computer bound - more space (can have more than 1))
+--if via cookie: either replace character with new one or get back to old.(computer bound - less space)
 saving the map in modified map then using the modified map as the array to render the lvl.

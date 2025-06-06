@@ -49,34 +49,6 @@ const Home: React.FC = () => {
     setShowInfo(show);
   };
 
-  const handleBlockUse = () => {
-    setPlayer((prevPlayer) => {
-      if (!prevPlayer.inventory.equiped) return prevPlayer;
-
-      // Vérifier si c'est un bloc et s'il reste des blocs
-      const blockType = Object.keys(prevPlayer.inventory.equiped).find((key) =>
-        key.endsWith("Block")
-      );
-      if (
-        blockType &&
-        prevPlayer.inventory.equiped[
-          blockType as keyof typeof prevPlayer.inventory.equiped
-        ] === 0
-      ) {
-        // Si le bloc est épuisé, déséquiper
-        return {
-          ...prevPlayer,
-          inventory: {
-            ...prevPlayer.inventory,
-            equiped: null,
-          },
-        };
-      }
-
-      return prevPlayer;
-    });
-  };
-
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
@@ -97,8 +69,8 @@ const Home: React.FC = () => {
                 onCellSelect={handleCellSelect}
                 onShowInfo={handleShowInfo}
                 player={player}
+                onInventoryChange={handleInventoryChange}
                 onCellsChange={setGameCells}
-                onBlockUse={handleBlockUse}
               />
             </div>
           </div>

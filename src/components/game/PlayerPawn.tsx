@@ -5,11 +5,13 @@ import {
   getFacingCell,
   canMoveToCell,
   mineCell,
+  placeBlock,
 } from "../../types/player";
 import Player from "../../types/player";
 import { Cell } from "../../types/cells";
 import { useRef, useState, useEffect } from "react";
 import "./PlayerPawn.css";
+import { Inventory, Tool } from "../../types/player";
 
 interface Block {
   stoneBlock?: number;
@@ -29,7 +31,7 @@ interface PlayerPawnProps {
   onShowInfo?: (show: boolean) => void;
   player: Player;
   onCellsChange: (cells: Cell[]) => void;
-  onBlockUse: () => void;
+  onInventoryChange: (inventory: Inventory) => void;
 }
 
 const PlayerPawn: React.FC<PlayerPawnProps> = ({
@@ -40,7 +42,7 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
   onShowInfo,
   player,
   onCellsChange,
-  onBlockUse,
+  onInventoryChange,
 }) => {
   const playerRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState<Direction>(Direction.RIGHT);
@@ -106,11 +108,12 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
     }
 
     // Vérifier si le joueur a un bloc équipé et fait face à un sol
-    const blockType = Object.keys(equippedItems).find((key) =>
-      key.endsWith("Block")
-    );
-    if (cell.type === "floor" && blockType && blockType in equippedItems) {
-      console.log("Can place block:", blockType);
+
+    if (
+      cell.type === "floor" &&
+      player.inventory.equiped !== null &&
+      "block" in player.inventory.equiped
+    ) {
       setActionType("place");
       setShowActionPopup(true);
       return;
@@ -133,32 +136,36 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
       if (cell.type === "wall") {
         mineCell(cell, player);
         onCellsChange([...cells]);
-      } else if (cell.type === "floor") {
-        const blockType = Object.keys(player.inventory.equiped || {}).find(
-          (key) => key.endsWith("Block")
-        );
-
         if (
-          blockType &&
           player.inventory.equiped &&
-          blockType in player.inventory.equiped
+          "pickaxe" in player.inventory.equiped &&
+          player.inventory.equiped.pickaxe &&
+          player.inventory.tools?.pickaxe
         ) {
-          const resourceType = (blockType as string).replace(
-            "Block",
-            ""
-          ) as keyof Cell["resources"];
-          cell.type = "wall";
-          cell.resources = {
-            stone: 0,
-            [resourceType]: 9,
-          };
+          const pickaxe = player.inventory.equiped.pickaxe;
+          const toolsPickaxe = player.inventory.tools.pickaxe;
 
-          const equippedBlock = player.inventory.equiped as Block;
-          equippedBlock[blockType as keyof Block] =
-            (equippedBlock[blockType as keyof Block] || 0) - 1;
-          onCellsChange([...cells]);
-          onBlockUse();
+          onInventoryChange({
+            ...player.inventory,
+            equiped: {
+              ...player.inventory.equiped,
+              pickaxe: {
+                ...pickaxe,
+                charge: pickaxe.charge - 1,
+              },
+            },
+            tools: {
+              ...player.inventory.tools,
+              pickaxe: {
+                ...toolsPickaxe,
+                charge: toolsPickaxe.charge - 1,
+              },
+            },
+          });
         }
+      } else if (cell.type === "floor") {
+        placeBlock(cell, player);
+        onCellsChange([...cells]);
       }
     }
   };

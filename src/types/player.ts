@@ -1,3 +1,4 @@
+import { log } from "console";
 import { Cell } from "./cells";
 
 export interface Tool {
@@ -47,7 +48,7 @@ export interface Inventory {
     | null;
 }
 
-interface Player {
+export interface Player {
   inventory: Inventory;
   modifiedMaps: Array<Object>; //array of modified maps
   //position on current map.
@@ -106,7 +107,7 @@ export const getFacingCell = (
 };
 
 // Mining functions
-const canMine = (cell: Cell, player: Player): boolean => {
+export const canMine = (cell: Cell, player: Player): boolean => {
   return (
     cell.type === "wall" &&
     player.inventory.equiped !== null &&
@@ -115,12 +116,52 @@ const canMine = (cell: Cell, player: Player): boolean => {
     player.inventory.equiped.pickaxe.charge > 0
   );
 };
+// Place block functions
+export const canPlaceBlock = (cell: Cell, player: Player): boolean => {
+  return (
+    cell.type === "floor" &&
+    player.inventory.equiped !== null &&
+    "block" in player.inventory.equiped &&
+    player.inventory.equiped.block !== undefined
+  );
+};
+export const calculateResourceGain = (cell: Cell): Resource => {
+  return cell.resources as Resource;
+};
+export const placeBlock = (cell: Cell, player: Player): void => {
+  if (!canPlaceBlock(cell, player)) return;
 
-const calculateResourceGain = (cell: Cell): Resource => {
-  return cell.resources || { stone: 0 };
+  // Mettre à jour l'inventaire
+  if (
+    player.inventory.equiped !== null &&
+    "block" in player.inventory.equiped &&
+    player.inventory.blocks !== null
+  ) {
+    const blockToUse = player.inventory.equiped.block as string;
+    if (blockToUse) {
+      const blockKey = (blockToUse + "Block") as keyof Block;
+      const currentCount = player.inventory.blocks[blockKey] || 0;
+      if (currentCount > 0) {
+        player.inventory.blocks[blockKey] = currentCount - 1;
+        cell.type = "wall";
+        const resourceType = blockToUse.replace("Block", "") as keyof Resource;
+        cell.resources = {
+          stone: 0,
+          [resourceType]: 9,
+        };
+
+        // Vérifier si c'était le dernier bloc
+        if (currentCount - 1 === 0 && player.inventory.tools?.pickaxe) {
+          player.inventory.equiped = {
+            pickaxe: player.inventory.tools.pickaxe,
+          };
+        }
+      }
+    }
+  }
 };
 
-const mineCell = (cell: Cell, player: Player): void => {
+export const mineCell = (cell: Cell, player: Player): void => {
   if (!canMine(cell, player)) return;
 
   // Récupérer les ressources
@@ -142,15 +183,6 @@ const mineCell = (cell: Cell, player: Player): void => {
     };
   }
 
-  // Réduire la charge de la pioche
-  if (
-    player.inventory.equiped !== null &&
-    "pickaxe" in player.inventory.equiped &&
-    player.inventory.equiped.pickaxe !== undefined
-  ) {
-    player.inventory.equiped.pickaxe.charge -= 1;
-  }
-
   // Transformer le mur en sol
   cell.type = "floor";
   cell.resources = undefined;
@@ -162,5 +194,4 @@ export const canMoveToCell = (cell: Cell | undefined): boolean => {
   return cell.type === "floor" || cell.type === "exit";
 };
 
-export { canMine, calculateResourceGain, mineCell };
 export default Player;

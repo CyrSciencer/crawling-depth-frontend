@@ -5,7 +5,7 @@ import {
   Tool,
   Consumable,
 } from "../../types/player";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import "./Inventory.css";
 
 interface InventoryWindowProps {
@@ -20,48 +20,39 @@ export const InventoryWindow = ({
   const [selectedType, setSelectedType] = useState<
     "pickaxe" | "block" | "consumable"
   >("pickaxe");
-  const [localInventory, setLocalInventory] = useState(inventory);
 
-  const availableBlocks = localInventory.blocks
-    ? Object.entries(localInventory.blocks)
+  const availableBlocks = inventory.blocks
+    ? Object.entries(inventory.blocks)
         .filter(([_, value]) => value && value > 0)
         .map(([key]) => key.replace("Block", ""))
     : [];
 
-  const availableConsumables = localInventory.consumables
-    ? localInventory.consumables.map((consumable) => consumable.impactStat)
+  const availableConsumables = inventory.consumables
+    ? inventory.consumables.map((consumable) => consumable.impactStat)
     : [];
-
-  // Update local inventory when prop changes
-  useEffect(() => {
-    setLocalInventory(inventory);
-  }, [inventory]);
 
   const handleEquip = (item: Tool | Consumable | Block) => {
     if (selectedType === "block") {
       const newInventory = {
-        ...localInventory,
+        ...inventory,
         equiped: {
           block: item as Block,
         },
       };
-      setLocalInventory(newInventory);
       onInventoryChange(newInventory);
     }
     if (selectedType === "consumable") {
       const newInventory = {
-        ...localInventory,
+        ...inventory,
         equiped: { consumable: item as Consumable },
       };
-      setLocalInventory(newInventory);
       onInventoryChange(newInventory);
     }
     if (selectedType === "pickaxe") {
       const newInventory = {
-        ...localInventory,
+        ...inventory,
         equiped: { pickaxe: item as Tool },
       };
-      setLocalInventory(newInventory);
       onInventoryChange(newInventory);
     }
     console.log(`Equipping ${item} of type ${selectedType}`);
@@ -69,64 +60,86 @@ export const InventoryWindow = ({
 
   const handleBlockCraft = useCallback(
     (material: keyof Resource) => {
-      if (!localInventory.resources || !localInventory.blocks) return;
+      if (!inventory.resources || !inventory.blocks) return;
 
-      const newResources = { ...localInventory.resources };
-      const newBlocks = { ...localInventory.blocks };
+      const newResources = { ...inventory.resources };
+      const newBlocks = { ...inventory.blocks };
 
       newResources[material] -= 9;
       const blockKey = `${material}Block` as keyof Block;
       newBlocks[blockKey] = (newBlocks[blockKey] || 0) + 1;
 
       const newInventory = {
-        ...localInventory,
+        ...inventory,
         resources: newResources,
         blocks: newBlocks,
       };
 
-      setLocalInventory(newInventory);
       onInventoryChange(newInventory);
     },
-    [localInventory, onInventoryChange]
+    [inventory, onInventoryChange]
   );
 
   return (
     <div className="inventory-container">
       <div className="inventory-section">
         <h2>Resources</h2>
-        <p>Stone: {localInventory.resources?.stone || 0}</p>
-        <p>Iron: {localInventory.resources?.iron || 0}</p>
-        <p>Silver: {localInventory.resources?.silver || 0}</p>
-        <p>Gold: {localInventory.resources?.gold || 0}</p>
-        <p>Tin: {localInventory.resources?.tin || 0}</p>
-        <p>Zinc: {localInventory.resources?.zinc || 0}</p>
-        <p>Crystal: {localInventory.resources?.crystal || 0}</p>
+        <p>Stone: {inventory.resources?.stone || 0}</p>
+        <p>Iron: {inventory.resources?.iron || 0}</p>
+        <p>Silver: {inventory.resources?.silver || 0}</p>
+        <p>Gold: {inventory.resources?.gold || 0}</p>
+        <p>Tin: {inventory.resources?.tin || 0}</p>
+        <p>Zinc: {inventory.resources?.zinc || 0}</p>
+        <p>Crystal: {inventory.resources?.crystal || 0}</p>
       </div>
       <div className="inventory-section">
         <h2>Blocks</h2>
         <p>
-          Stone: {localInventory.blocks?.stoneBlock || 0}{" "}
-          {localInventory.resources?.stone &&
-            localInventory.resources.stone >= 9 && (
-              <button onClick={() => handleBlockCraft("stone")}>create</button>
-            )}
+          Stone: {inventory.blocks?.stoneBlock || 0}{" "}
+          {inventory.resources?.stone && inventory.resources.stone >= 9 && (
+            <button onClick={() => handleBlockCraft("stone")}>create</button>
+          )}
         </p>
         <p>
-          Iron: {localInventory.blocks?.ironBlock || 0}{" "}
-          {localInventory.resources?.iron &&
-            localInventory.resources.iron >= 9 && (
-              <button onClick={() => handleBlockCraft("iron")}>create</button>
-            )}
+          Iron: {inventory.blocks?.ironBlock || 0}{" "}
+          {inventory.resources?.iron && inventory.resources.iron >= 9 && (
+            <button onClick={() => handleBlockCraft("iron")}>create</button>
+          )}
         </p>
-        <p>Silver: {localInventory.blocks?.silverBlock || 0}</p>
-        <p>Gold: {localInventory.blocks?.goldBlock || 0}</p>
-        <p>Tin: {localInventory.blocks?.tinBlock || 0}</p>
-        <p>Zinc: {localInventory.blocks?.zincBlock || 0}</p>
-        <p>Crystal: {localInventory.blocks?.crystalBlock || 0}</p>
+        <p>
+          Silver: {inventory.blocks?.silverBlock || 0}{" "}
+          {inventory.resources?.silver && inventory.resources.silver >= 9 && (
+            <button onClick={() => handleBlockCraft("silver")}>create</button>
+          )}
+        </p>
+        <p>
+          Gold: {inventory.blocks?.goldBlock || 0}{" "}
+          {inventory.resources?.gold && inventory.resources.gold >= 9 && (
+            <button onClick={() => handleBlockCraft("gold")}>create</button>
+          )}
+        </p>
+        <p>
+          Tin: {inventory.blocks?.tinBlock || 0}{" "}
+          {inventory.resources?.tin && inventory.resources.tin >= 9 && (
+            <button onClick={() => handleBlockCraft("tin")}>create</button>
+          )}
+        </p>
+        <p>
+          Zinc: {inventory.blocks?.zincBlock || 0}{" "}
+          {inventory.resources?.zinc && inventory.resources.zinc >= 9 && (
+            <button onClick={() => handleBlockCraft("zinc")}>create</button>
+          )}
+        </p>
+        <p>
+          Crystal: {inventory.blocks?.crystalBlock || 0}{" "}
+          {inventory.resources?.crystal && inventory.resources.crystal >= 9 && (
+            <button onClick={() => handleBlockCraft("crystal")}>create</button>
+          )}
+        </p>
       </div>
       <div className="inventory-section">
         <h2>Consumables</h2>
-        {localInventory.consumables?.map((consumable) => (
+        {inventory.consumables?.map((consumable) => (
           <p key={consumable.impactStat}>
             {consumable.impactStat}: {consumable.quantity}
           </p>
@@ -134,7 +147,7 @@ export const InventoryWindow = ({
       </div>
       <div className="inventory-section">
         <h2>Equipped</h2>
-        <p>{JSON.stringify(localInventory.equiped)}</p>
+        <p>{JSON.stringify(inventory.equiped as Block | Consumable | Tool)}</p>
         <select
           value={selectedType}
           onChange={(e) =>
@@ -182,24 +195,24 @@ export const InventoryWindow = ({
 
         {selectedType === "pickaxe" && (
           <div className="equip-options">
-            {localInventory.tools?.pickaxe && (
+            {inventory.tools?.pickaxe && (
               <button
                 onClick={() =>
-                  handleEquip(localInventory.tools?.pickaxe as unknown as Tool)
+                  handleEquip(inventory.tools?.pickaxe as unknown as Tool)
                 }
                 className="equip-button"
               >
                 Equip Pickaxe
               </button>
             )}
-            {localInventory.equiped !== null &&
-              "pickaxe" in localInventory.equiped &&
-              localInventory.equiped.pickaxe && (
+            {inventory.equiped !== null &&
+              "pickaxe" in inventory.equiped &&
+              inventory.equiped.pickaxe && (
                 <div className="equipped-item">
                   <h3>Pickaxe</h3>
-                  <p>Charge: {localInventory.equiped.pickaxe.charge}</p>
-                  <p>Power: {localInventory.equiped.pickaxe.power}</p>
-                  <p>Bonus: {localInventory.equiped.pickaxe.bonus}</p>
+                  <p>Charge: {inventory.equiped.pickaxe.charge}</p>
+                  <p>Power: {inventory.equiped.pickaxe.power}</p>
+                  <p>Bonus: {inventory.equiped.pickaxe.bonus}</p>
                 </div>
               )}
           </div>
