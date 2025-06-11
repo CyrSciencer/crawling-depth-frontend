@@ -1,6 +1,6 @@
 block placement. DONE////////////
 pickaxe charge permanence!DONE//////////////
-crafting system for consummables.
+crafting system for consummables.DONE////////
 player creation to backend.
 get player info via cookie vs via personnal code:
 --if via personnal code: either new character or input code to get player.(not computer bound - more space (can have more than 1))

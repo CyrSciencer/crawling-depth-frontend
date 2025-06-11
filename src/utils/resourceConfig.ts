@@ -7,7 +7,8 @@ export type ResourceType =
   | "gold"
   | "tin"
   | "zinc"
-  | "crystal";
+  | "crystal"
+  | "copper";
 
 export const RESOURCE_TYPES: ResourceType[] = [
   "stone",
@@ -17,6 +18,7 @@ export const RESOURCE_TYPES: ResourceType[] = [
   "tin",
   "zinc",
   "crystal",
+  "copper",
 ];
 
 export const RESOURCE_VALUES: Record<ResourceType, Cell["resources"]> = {
@@ -27,4 +29,5 @@ export const RESOURCE_VALUES: Record<ResourceType, Cell["resources"]> = {
   tin: { stone: 1, tin: 1 },
   zinc: { stone: 1, zinc: 1 },
   crystal: { stone: 1, crystal: 1 },
+  copper: { stone: 1, copper: 1 },
 };

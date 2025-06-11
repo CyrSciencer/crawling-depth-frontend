@@ -1,7 +1,7 @@
 export interface Cell {
   row: number;
   col: number;
-  type: "floor" | "wall" | "exit" | "unbreakable" | "chest";
+  type: "floor" | "wall" | "exit" | "unbreakable" | "chest" | "trap";
   isSelected?: boolean;
   resources?: {
     stone: number;
@@ -11,6 +11,7 @@ export interface Cell {
     tin?: number;
     zinc?: number;
     crystal?: number;
+    copper?: number;
   };
 }
 

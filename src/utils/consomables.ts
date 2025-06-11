@@ -1,5 +1,6 @@
 import { ResourceType } from "./resourceConfig";
-export enum Consumable {
+import { Consumable } from "../types/player";
+export enum ConsumableStats {
   HEALTH = "health",
   CHARGE = "charge",
   POWER = "power",
@@ -7,119 +8,143 @@ export enum Consumable {
 }
 
 export interface ConsumableRecipe {
-  name: Consumable;
+  name: ConsumableStats;
   recipe: {
     [key in ResourceType]: number;
   };
   quantity: number;
   craftTime: number;
-  description: string;
+
+  impact: number;
 }
 
 export const consumableRecipes: ConsumableRecipe[] = [
   {
-    name: Consumable.HEALTH,
+    name: ConsumableStats.HEALTH,
     recipe: {
       stone: 0,
       iron: 0,
       silver: 0,
       gold: 0,
-      tin: 2,
+      tin: 0,
       zinc: 0,
       crystal: 0,
+      copper: 3,
     },
     quantity: 1,
     craftTime: 1,
-    description: "Restaure un peu de santé",
+    impact: 10,
   },
   {
-    name: Consumable.HEALTH,
+    name: ConsumableStats.HEALTH,
     recipe: {
       stone: 0,
-      iron: 2,
+      iron: 0,
       silver: 0,
       gold: 0,
       tin: 5,
       zinc: 0,
       crystal: 0,
-    },
-    quantity: 3,
-    craftTime: 2,
-    description: "Restaure une quantité moyenne de santé",
-  },
-  {
-    name: Consumable.CHARGE,
-    recipe: {
-      stone: 0,
-      iron: 0,
-      silver: 0,
-      gold: 0,
-      tin: 0,
-      zinc: 3,
-      crystal: 0,
+      copper: 3,
     },
     quantity: 1,
-    craftTime: 1,
-    description: "Recharge un peu votre outil",
+    craftTime: 2,
+    impact: 20,
   },
   {
-    name: Consumable.CHARGE,
+    name: ConsumableStats.CHARGE,
     recipe: {
       stone: 0,
-      iron: 0,
-      silver: 2,
-      gold: 0,
-      tin: 0,
-      zinc: 8,
-      crystal: 0,
-    },
-    quantity: 5,
-    craftTime: 3,
-    description: "Recharge complètement votre outil",
-  },
-  {
-    name: Consumable.POWER,
-    recipe: {
-      stone: 0,
-      iron: 4,
+      iron: 5,
       silver: 0,
       gold: 0,
       tin: 0,
       zinc: 0,
-      crystal: 0,
+      crystal: 1,
+      copper: 0,
+    },
+    quantity: 1,
+    craftTime: 1,
+    impact: 10,
+  },
+  {
+    name: ConsumableStats.CHARGE,
+    recipe: {
+      stone: 0,
+      iron: 5,
+      silver: 0,
+      gold: 0,
+      tin: 0,
+      zinc: 0,
+      crystal: 1,
+      copper: 5,
+    },
+    quantity: 1,
+    craftTime: 3,
+    impact: 20,
+  },
+  {
+    name: ConsumableStats.POWER,
+    recipe: {
+      stone: 0,
+      iron: 3,
+      silver: 3,
+      gold: 0,
+      tin: 0,
+      zinc: 0,
+      crystal: 1,
+      copper: 0,
     },
     quantity: 1,
     craftTime: 2,
-    description: "Augmente temporairement votre puissance",
+    impact: 10,
   },
   {
-    name: Consumable.POWER,
+    name: ConsumableStats.POWER,
     recipe: {
       stone: 0,
-      iron: 0,
+      iron: 3,
       silver: 0,
       gold: 3,
       tin: 0,
       zinc: 0,
       crystal: 1,
+      copper: 0,
     },
     quantity: 1,
     craftTime: 4,
-    description: "Augmente significativement votre puissance",
+    impact: 20,
   },
   {
-    name: Consumable.BONUS,
+    name: ConsumableStats.BONUS,
     recipe: {
       stone: 0,
       iron: 0,
       silver: 0,
-      gold: 2,
+      gold: 0,
       tin: 0,
-      zinc: 0,
+      zinc: 2,
       crystal: 2,
+      copper: 0,
     },
     quantity: 1,
     craftTime: 5,
-    description: "Applique un bonus spécial temporaire",
+    impact: 1,
+  },
+  {
+    name: ConsumableStats.BONUS,
+    recipe: {
+      stone: 0,
+      iron: 0,
+      silver: 0,
+      gold: 0,
+      tin: 0,
+      zinc: 5,
+      crystal: 2,
+      copper: 0,
+    },
+    quantity: 1,
+    craftTime: 5,
+    impact: 2,
   },
 ];

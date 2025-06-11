@@ -1,4 +1,6 @@
-import Player from "../types/player";
+import { Player } from "../types/player";
+import { Cell } from "../types/cells";
+import { ConsumableStats } from "./consomables";
 
 interface Reward {
   type: "resource" | "consumable";
@@ -14,13 +16,15 @@ const REWARDS: Reward[] = [
   { type: "resource", name: "tin", value: 4, chance: [30, 40] },
   { type: "resource", name: "zinc", value: 4, chance: [40, 50] },
   { type: "resource", name: "crystal", value: 4, chance: [50, 60] },
-  { type: "consumable", name: "health", value: 10, chance: [60, 70] },
-  { type: "consumable", name: "charge", value: 10, chance: [70, 80] },
-  { type: "consumable", name: "power", value: 10, chance: [80, 90] },
-  { type: "consumable", name: "bonus", value: 10, chance: [90, 100] },
+  { type: "resource", name: "copper", value: 4, chance: [60, 70] },
+  { type: "consumable", name: "health", value: 10, chance: [70, 80] },
+  { type: "consumable", name: "charge", value: 10, chance: [80, 90] },
+  { type: "consumable", name: "power", value: 10, chance: [90, 100] },
 ];
 
-export const chestEvent = (player: Player): void => {
+export const chestEvent = (cell: Cell, player: Player): void => {
+  if (cell.type !== "chest") return;
+
   const randomNumber = Math.floor(Math.random() * 100);
 
   const reward = REWARDS.find(
@@ -38,8 +42,10 @@ export const chestEvent = (player: Player): void => {
       ] || 0) + reward.value;
   } else if (reward.type === "consumable" && player.inventory.consumables) {
     player.inventory.consumables.push({
-      impactStat: reward.name,
+      impactStat: reward.name as ConsumableStats,
+      impactValue: reward.value,
       quantity: reward.value,
     });
   }
+  cell.type = "floor";
 };

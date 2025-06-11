@@ -1,5 +1,6 @@
 import { log } from "console";
 import { Cell } from "./cells";
+import { ConsumableStats } from "../utils/consomables";
 
 export interface Tool {
   charge: number;
@@ -7,7 +8,8 @@ export interface Tool {
   bonus: string;
 }
 export interface Consumable {
-  impactStat: string;
+  impactStat: ConsumableStats;
+  impactValue: number;
   quantity: number;
 }
 export interface Resource {
@@ -18,6 +20,7 @@ export interface Resource {
   tin?: number;
   zinc?: number;
   crystal?: number;
+  copper?: number;
 }
 export interface Block {
   stoneBlock?: number;
@@ -59,6 +62,7 @@ export interface Player {
   currentMap: string; //ref to the modified map (personnal ID)
   movementPerTurn: Number;
   health: Number;
+  recoveryCode: Number;
 }
 
 export interface Position {
@@ -191,7 +195,7 @@ export const mineCell = (cell: Cell, player: Player): void => {
 // Movement validation
 export const canMoveToCell = (cell: Cell | undefined): boolean => {
   if (!cell) return false;
-  return cell.type === "floor" || cell.type === "exit";
+  return cell.type === "floor" || cell.type === "exit" || cell.type === "trap";
 };
 
 export default Player;

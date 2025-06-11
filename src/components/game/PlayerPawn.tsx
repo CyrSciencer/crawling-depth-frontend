@@ -12,6 +12,7 @@ import { Cell } from "../../types/cells";
 import { useRef, useState, useEffect } from "react";
 import "./PlayerPawn.css";
 import { Inventory, Tool } from "../../types/player";
+import { chestEvent } from "../../utils/chestEvent";
 
 interface Block {
   stoneBlock?: number;
@@ -118,6 +119,12 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
       setShowActionPopup(true);
       return;
     }
+    //check if the cell is a chest
+    if (cell.type === "chest") {
+      setActionType("chest");
+      setShowActionPopup(true);
+      return;
+    }
 
     console.log("No action possible");
     setShowActionPopup(false);
@@ -140,7 +147,8 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
           player.inventory.equiped &&
           "pickaxe" in player.inventory.equiped &&
           player.inventory.equiped.pickaxe &&
-          player.inventory.tools?.pickaxe
+          player.inventory.tools?.pickaxe &&
+          player.inventory.tools.pickaxe.charge > 0
         ) {
           const pickaxe = player.inventory.equiped.pickaxe;
           const toolsPickaxe = player.inventory.tools.pickaxe;
@@ -165,6 +173,9 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
         }
       } else if (cell.type === "floor") {
         placeBlock(cell, player);
+        onCellsChange([...cells]);
+      } else if (cell.type === "chest") {
+        chestEvent(cell, player);
         onCellsChange([...cells]);
       }
     }
@@ -250,7 +261,13 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
             pointerEvents: "none", // Empêche le pop-up d'interférer avec les clics
           }}
         >
-          {actionType === "mine" ? "Mine Wall" : "Place Block"}
+          {actionType === "mine"
+            ? "Mine Wall"
+            : actionType === "place"
+            ? "Place Block"
+            : actionType === "chest"
+            ? "Open Chest"
+            : "No Action"}
         </div>
       )}
     </div>
