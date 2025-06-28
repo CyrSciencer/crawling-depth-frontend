@@ -1,0 +1,73 @@
+.player {
+  position: absolute;
+  width: 35px;
+  height: 35px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+  z-index: 1000;
+  transform: translate(var(--player-x), var(--player-y))
+    rotate(var(--player-rotation));
+}
+
+.player-front {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 12px solid #2e7d32;
+  position: absolute;
+  top: -4px;
+  transform-origin: center bottom;
+}
+
+/* Direction-specific styles */
+.direction-360 .player-front {
+  transform: rotate(0deg);
+}
+
+.direction-90 .player-front {
+  transform: rotate(90deg);
+}
+
+.direction-180 .player-front {
+  transform: rotate(180deg);
+}
+
+.direction-270 .player-front {
+  transform: rotate(270deg);
+}
+
+/* Hover effect */
+.player:hover {
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+
+/* Active state when moving */
+.player:active {
+  transform: translate(var(--player-x), var(--player-y))
+    rotate(var(--player-rotation)) scale(0.95);
+}
+
+/* Animation for movement */
+@keyframes move {
+  0% {
+    transform: translate(var(--player-x), var(--player-y))
+      rotate(var(--player-rotation));
+  }
+  50% {
+    transform: translate(var(--player-x), var(--player-y))
+      rotate(var(--player-rotation)) scale(0.95);
+  }
+  100% {
+    transform: translate(var(--player-x), var(--player-y))
+      rotate(var(--player-rotation));
+  }
+}
+
+.player.moving {
+  animation: move 0.2s ease;
+}

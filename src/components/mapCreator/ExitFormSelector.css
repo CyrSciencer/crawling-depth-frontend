@@ -1,0 +1,60 @@
+.exit-form-selector {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.exit-form-selector h3 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.exit-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.exit-form-button {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+}
+
+.exit-form-button:hover {
+  background-color: #e8e8e8;
+}
+
+.exit-form-button.selected {
+  background-color: #4caf50;
+  color: white;
+  border-color: #45a049;
+}
+
+.exit-form-preview {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.exit-cell {
+  background-color: #ddd;
+  border-radius: 2px;
+}
+
+.exit-cell.active {
+  background-color: #4caf50;
+}

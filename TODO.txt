@@ -1,0 +1,11 @@
+block placement. DONE////////////
+pickaxe charge permanence!DONE//////////////
+crafting system for consummables.DONE////////
+player creation to backend.DONE/////////
+modified map, better save.DONE/////////
+load modified map only.DONE/////////
+get player via recovery code.DONE/////////
+saving the map in modified map then using the modified map as the array to render the lvl.DONE/////////
+permanence of player and maps.DONE/////////
+get the exit link logic.
+transition to new map.

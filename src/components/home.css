@@ -1,0 +1,34 @@
+.player-container {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+}
+
+.game-window {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+}
+.health-bar {
+  position: relative;
+  top: 500px;
+  width: 200px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #000;
+}
+.health-bar > p {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  color: #000000;
+}
+.health-bar-fill {
+  position: absolute;
+  height: 100%;
+  background-color: #ff5555;
+}

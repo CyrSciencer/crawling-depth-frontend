@@ -1,0 +1,73 @@
+.map-creator {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.map-creator-header {
+  margin-bottom: 2rem;
+}
+
+.map-creator-header h1 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.map-creator-content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+}
+
+.map-creator-sidebar {
+  background-color: #f9f9f9;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.map-creator-main {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.map-creator-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.map-creator-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.map-creator-button:hover {
+  background-color: #e8e8e8;
+}
+
+.map-creator-button.primary {
+  background-color: #4caf50;
+  color: white;
+  border-color: #45a049;
+}
+
+.map-creator-button.primary:hover {
+  background-color: #45a049;
+}
+
+.map-creator-button.danger {
+  background-color: #f44336;
+  color: white;
+  border-color: #d32f2f;
+}
+
+.map-creator-button.danger:hover {
+  background-color: #d32f2f;
+}
