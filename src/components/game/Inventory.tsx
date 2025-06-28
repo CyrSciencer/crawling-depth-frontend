@@ -1,5 +1,5 @@
 import React from "react";
-import { Inventory, PlayerData } from "../../models/Player";
+import { Inventory, Player } from "../../models/Player";
 import "./Inventory.css";
 import { useInventory } from "../../hooks/useInventory";
 import {
@@ -12,8 +12,8 @@ import {
 interface InventoryWindowProps {
   inventory: Inventory;
   onInventoryChange: (newInventory: Inventory) => void;
-  player: PlayerData;
-  onPlayerChange: (newPlayer: PlayerData) => void;
+  player: Player;
+  onPlayerChange: (newPlayer: Player) => void;
 }
 
 export const InventoryWindow: React.FC<InventoryWindowProps> = ({

@@ -1,9 +1,6 @@
 import { Cell } from "./cells";
 import { PlayerData, Position, Block, Resource } from "../models/Player";
 
-// Re-exporting PlayerData as Player for compatibility with existing utility functions.
-export type Player = PlayerData;
-
 export enum Direction {
   UP = 360,
   RIGHT = 90,

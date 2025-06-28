@@ -1,28 +1,9 @@
 import { Cell } from "../types/cells";
-import { PlayerData } from "../models/Player";
+import { PlayerData, Player } from "../models/Player";
 import axios from "axios";
 
 // Map utilities module loading logging | used for debugging module initialization
 console.log("🗺️ Map utilities module loaded");
-
-// Current map finder function | used to locate the player's current map from their modified maps array
-export const findCurrentMap = (playerData: PlayerData) => {
-  const { currentMap } = playerData;
-  // Map search and logging | used to find and log the current map being used
-  const mapToUse = playerData.modifiedMaps.find((map: any) => {
-    console.log("map", map.personalID);
-    console.log("currentMap", currentMap);
-    return map.personalID === currentMap;
-  });
-
-  // Map validation | used to ensure the current map exists in the player's data
-  if (!mapToUse) {
-    console.error("Map not found");
-    return null;
-  }
-
-  return mapToUse;
-};
 
 // First-time map processing function | used to initialize a map with chests and traps for new players
 export const processFirstTimeMap = (mapToUse: any, chestPresent: number) => {
@@ -59,14 +40,15 @@ export const loadPlayerMap = async (recoveryCode: number) => {
     const { data: playerData } = await axios.get(
       `http://localhost:3001/api/player/${recoveryCode}`
     );
+    const player = new Player(playerData);
 
     // Current map finding | used to locate the player's current map from their data
-    const mapToUse = findCurrentMap(playerData);
+    const mapToUse = player.getCurrentMap();
     if (!mapToUse) {
       throw new Error("Map not found");
     }
 
-    return { playerData, mapToUse };
+    return { player, mapToUse };
   } catch (error) {
     // Error handling and logging | used to provide detailed error information for debugging
     if (axios.isAxiosError(error)) {

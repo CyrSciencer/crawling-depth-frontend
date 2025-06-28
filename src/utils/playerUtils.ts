@@ -1,5 +1,5 @@
 import axios from "axios";
-import { PlayerData } from "../models/Player";
+import { PlayerData, Player } from "../models/Player";
 import { ExitForm } from "../types/cells";
 
 // Player utilities module loading logging | used for debugging module initialization
@@ -106,9 +106,7 @@ export const checkRecoveryCodeExists = async (
 };
 
 // New player creation function | used to create a new player with unique recovery code and initial data
-export const createNewPlayer = async (
-  exitForm: ExitForm
-): Promise<PlayerData> => {
+export const createNewPlayer = async (exitForm: ExitForm): Promise<Player> => {
   // Recovery code generation loop | used to ensure unique recovery code generation
   let recoveryCode: number;
   let isCodeInUse: boolean;
@@ -142,15 +140,15 @@ export const createNewPlayer = async (
     newPlayerData
   );
 
-  return createdPlayer;
+  return new Player(createdPlayer);
 };
 
 // Player retrieval function | used to fetch player data by recovery code from the backend
 export const getPlayerByCode = async (
   recoveryCode: number
-): Promise<PlayerData> => {
+): Promise<Player> => {
   const { data: playerData } = await axios.get(
     `http://localhost:3001/api/player/${recoveryCode}`
   );
-  return playerData;
+  return new Player(playerData);
 };

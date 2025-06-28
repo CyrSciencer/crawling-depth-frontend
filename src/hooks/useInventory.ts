@@ -6,6 +6,7 @@ import {
   Tool,
   Consumable,
   PlayerData,
+  Player,
 } from "../models/Player";
 import { ConsumableStats } from "../config/consumablesConfig";
 import {
@@ -16,10 +17,7 @@ import {
   getFilteredRecipes,
   canCraftBlock,
 } from "../utils/inventoryUtils";
-import {
-  handleConsumableCraft,
-  handleConsumableUse,
-} from "../utils/consumableUtils";
+import { handleConsumableCraft } from "../utils/consumableUtils";
 
 // Inventory hook module loading logging | used for debugging module initialization
 console.log("🎒 Inventory hook module loaded");
@@ -28,8 +26,8 @@ console.log("🎒 Inventory hook module loaded");
 interface UseInventoryProps {
   inventory: Inventory;
   onInventoryChange: (newInventory: Inventory) => void;
-  player: PlayerData;
-  onPlayerChange: (newPlayer: PlayerData) => void;
+  player: Player;
+  onPlayerChange: (newPlayer: Player) => void;
 }
 
 // Main Inventory custom hook | used to manage all inventory state and logic in a centralized location
@@ -77,9 +75,10 @@ export const useInventory = ({
   // Consumable use callback | used to handle using consumables with memoization for performance
   const handleConsumableUseCallback = useCallback(
     (consumable: Consumable) => {
-      handleConsumableUse(consumable, player, inventory, onPlayerChange);
+      const newPlayer = player.useConsumable(consumable);
+      onPlayerChange(newPlayer);
     },
-    [player, inventory, onPlayerChange]
+    [player, onPlayerChange]
   );
 
   // Recipe crafting validation callback | used to check if a recipe can be crafted with memoization

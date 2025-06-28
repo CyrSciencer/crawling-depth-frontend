@@ -1,5 +1,5 @@
 import { Cell } from "../types/cells";
-import { PlayerData, Resource, Block } from "../models/Player";
+import { PlayerData, Resource, Block, Player } from "../models/Player";
 
 // Cell utilities module loading logging | used for debugging module initialization
 console.log("🎯 Cell utilities module loaded");
@@ -91,87 +91,6 @@ export const canMoveToCell = (cell: Cell | undefined): boolean => {
   return cell.type === "floor" || cell.type === "exit" || cell.type === "trap";
 };
 
-// Mining functions
-export const canMine = (cell: Cell, player: PlayerData): boolean => {
-  return (
-    cell.type === "wall" &&
-    player.inventory.equiped !== null &&
-    "pickaxe" in player.inventory.equiped &&
-    player.inventory.equiped.pickaxe !== undefined &&
-    player.inventory.equiped.pickaxe.charge > 0
-  );
-};
-
-// Place block functions
-export const canPlaceBlock = (cell: Cell, player: PlayerData): boolean => {
-  return (
-    cell.type === "floor" &&
-    player.inventory.equiped !== null &&
-    "block" in player.inventory.equiped &&
-    player.inventory.equiped.block !== undefined
-  );
-};
-
 export const calculateResourceGain = (cell: Cell): Resource => {
   return cell.resources as Resource;
-};
-
-export const placeBlock = (cell: Cell, player: PlayerData): void => {
-  if (!canPlaceBlock(cell, player)) return;
-
-  // Mettre à jour l'inventaire
-  if (
-    player.inventory.equiped !== null &&
-    "block" in player.inventory.equiped &&
-    player.inventory.blocks !== null
-  ) {
-    const blockToUse = player.inventory.equiped.block as unknown as string;
-    if (blockToUse) {
-      const blockKey = (blockToUse + "Block") as keyof Block;
-      const currentCount = player.inventory.blocks[blockKey] || 0;
-      if (currentCount > 0) {
-        player.inventory.blocks[blockKey] = currentCount - 1;
-        cell.type = "wall";
-        const resourceType = blockToUse.replace("Block", "") as keyof Resource;
-        cell.resources = {
-          stone: 0,
-          [resourceType]: 9,
-        };
-
-        // Vérifier si c'était le dernier bloc
-        if (currentCount - 1 === 0 && player.inventory.tools?.pickaxe) {
-          player.inventory.equiped = {
-            pickaxe: player.inventory.tools.pickaxe,
-          };
-        }
-      }
-    }
-  }
-};
-
-export const mineCell = (cell: Cell, player: PlayerData): void => {
-  if (!canMine(cell, player)) return;
-
-  // Récupérer les ressources
-  const resourceGain = calculateResourceGain(cell);
-
-  // Mettre à jour l'inventaire
-  if (player.inventory.resources) {
-    player.inventory.resources = {
-      ...player.inventory.resources,
-      ...Object.entries(resourceGain).reduce(
-        (acc, [resource, amount]) => ({
-          ...acc,
-          [resource]:
-            (player.inventory.resources?.[resource as keyof Resource] || 0) +
-            amount,
-        }),
-        {}
-      ),
-    };
-  }
-
-  // Transformer le mur en sol
-  cell.type = "floor";
-  cell.resources = undefined;
 };

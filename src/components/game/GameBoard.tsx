@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Cell } from "../../types/cells";
 import "./GameBoard.css";
 import { PlayerSelection } from "./PlayerSelection";
-import { PlayerData, Position } from "../../models/Player";
+import { Player, Position } from "../../models/Player";
 import { useGameBoard } from "../../hooks/useGameBoard";
 import { getCellClassName, renderCellInfo } from "../../utils/cellUtils";
 
@@ -11,38 +11,46 @@ console.log("🎮 GameBoard component module loaded");
 
 // GameBoard component props interface | used to define the expected props for the GameBoard component
 interface GameBoardProps {
-  onCellsChange?: (cells: Cell[]) => void;
-  player: PlayerData | null;
-  setPlayer: React.Dispatch<React.SetStateAction<PlayerData>>;
+  player: Player | null;
+  setPlayer: React.Dispatch<React.SetStateAction<Player | null>>;
 }
 
 // Main GameBoard component function | used to render the game grid and handle player interactions
-export const GameBoard: React.FC<GameBoardProps> = ({
-  onCellsChange,
-  player,
-  setPlayer,
-}) => {
+export const GameBoard: React.FC<GameBoardProps> = ({ player, setPlayer }) => {
+  const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
+
   // GameBoard component initialization logging | used for debugging component lifecycle
   console.log("🎮 GameBoard component initializing...");
   // Props validation logging | used for debugging to verify props are passed correctly
-  const { position } = player as PlayerData;
+  const { position } = player as Player;
   console.log("📊 maps data", player?.modifiedMaps);
 
   // GameBoard state and handlers from custom hook | used to manage game board state and interactions
   const {
     showGameBoard,
-    selectedCell,
     cells,
     handleNewPlayer,
     handleGetPlayer,
-    handleCellClick,
-    setCells,
     handleNewMap,
   } = useGameBoard({
     player,
     setPlayer,
-    onCellsChange,
   });
+
+  const handleCellClick = (cell: Cell) => {
+    // If the same cell is clicked, deselect it. Otherwise, select the new cell.
+    const cellToSelect =
+      selectedCell &&
+      selectedCell.row === cell.row &&
+      selectedCell.col === cell.col
+        ? null
+        : cell;
+    const newPlayer = player?.selectCell(cellToSelect);
+    if (newPlayer) {
+      setPlayer(newPlayer);
+    }
+    setSelectedCell(cellToSelect);
+  };
 
   useEffect(() => {
     handleNewMap();

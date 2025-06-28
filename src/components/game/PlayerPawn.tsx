@@ -5,12 +5,14 @@ import {
   Tool,
   Block,
   PlayerData,
+  Resource,
 } from "../../models/Player";
 import { Cell } from "../../types/cells";
 import { useRef, useState, useEffect } from "react";
 import "./PlayerPawn.css";
-import { chestEvent } from "../../events/chestEvent";
-import { mineCell, placeBlock, canMoveToCell } from "../../utils/cellUtils";
+import { canMoveToCell } from "../../utils/cellUtils";
+import { Player } from "../../models/Player";
+import { log } from "console";
 
 interface PlayerPawnProps {
   position: Position;
@@ -18,9 +20,8 @@ interface PlayerPawnProps {
   cells: Cell[];
   onCellSelect?: (cell: Cell | null) => void;
   onShowInfo?: (show: boolean) => void;
-  player: PlayerData;
-  onCellsChange: (cells: Cell[]) => void;
-  onInventoryChange: (inventory: Inventory) => void;
+  player: Player;
+  onPlayerChange: (player: Player) => void;
 }
 
 const PlayerPawn: React.FC<PlayerPawnProps> = ({
@@ -30,8 +31,7 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
   onCellSelect,
   onShowInfo,
   player,
-  onCellsChange,
-  onInventoryChange,
+  onPlayerChange,
 }) => {
   const playerRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState<Direction>(Direction.RIGHT);
@@ -80,32 +80,19 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
     const popupY = position.row * 47.5 - 37;
     setActionPosition({ x: popupX, y: popupY });
 
-    // Vérifier les équipements du joueur
-    const equippedItems = player.inventory.equiped || {};
-    // Vérifier si le joueur a une pioche équipée et fait face à un mur
-    if (
-      cell.type === "wall" &&
-      "pickaxe" in equippedItems &&
-      equippedItems.pickaxe !== undefined &&
-      equippedItems.pickaxe.charge > 0
-    ) {
-      console.log("Can mine wall");
+    // Use the new Player class methods to check for possible actions
+    if (player.canMine(cell)) {
       setActionType("mine");
       setShowActionPopup(true);
       return;
     }
 
-    // Vérifier si le joueur a un bloc équipé et fait face à un sol
-
-    if (
-      cell.type === "floor" &&
-      player.inventory.equiped !== null &&
-      "block" in player.inventory.equiped
-    ) {
+    if (player.canPlaceBlock(cell)) {
       setActionType("place");
       setShowActionPopup(true);
       return;
     }
+
     //check if the cell is a chest
     if (cell.type === "chest") {
       setActionType("chest");
@@ -124,47 +111,66 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
 
   const handleAction = () => {
     const facingCell = getFacingCell(position, rotation);
+    if (!facingCell) return;
+
     const cell = getCellAtPosition(facingCell);
+    if (!cell) return;
 
-    if (cell) {
-      if (cell.type === "wall") {
-        mineCell(cell, player);
-        onCellsChange([...cells]);
-        if (
-          player.inventory.equiped &&
-          "pickaxe" in player.inventory.equiped &&
-          player.inventory.equiped.pickaxe &&
-          player.inventory.tools?.pickaxe &&
-          player.inventory.tools.pickaxe.charge > 0
-        ) {
-          const pickaxe = player.inventory.equiped.pickaxe;
-          const toolsPickaxe = player.inventory.tools.pickaxe;
-
-          onInventoryChange({
-            ...player.inventory,
-            equiped: {
-              ...player.inventory.equiped,
-              pickaxe: {
-                ...pickaxe,
-                charge: pickaxe.charge - 1,
-              },
-            },
-            tools: {
-              ...player.inventory.tools,
-              pickaxe: {
-                ...toolsPickaxe,
-                charge: toolsPickaxe.charge - 1,
-              },
-            },
-          });
-        }
-      } else if (cell.type === "floor") {
-        placeBlock(cell, player);
-        onCellsChange([...cells]);
-      } else if (cell.type === "chest") {
-        chestEvent(cell, player);
-        onCellsChange([...cells]);
+    switch (actionType) {
+      case "mine": {
+        let newPlayer = player.mine(cell);
+        const newCells = cells.map((c) =>
+          c.row === cell.row && c.col === cell.col
+            ? { ...c, type: "floor" as Cell["type"], resources: undefined }
+            : c
+        );
+        console.log("mine");
+        newPlayer = newPlayer.updateCurrentMap(newCells);
+        onPlayerChange(newPlayer);
+        break;
       }
+      case "place": {
+        const { newPlayer, blockType } = player.placeBlock(cell);
+
+        console.log("blockType", blockType);
+        if (newPlayer !== player && blockType) {
+          console.log("place");
+          const resourceType = blockType.replace("Block", "") as keyof Resource;
+          const newCells = cells.map((c) => {
+            if (c.row === cell.row && c.col === cell.col) {
+              const newResources: Resource = {
+                stone: 0, // Ensure the base property is present
+                [resourceType]: 9,
+              };
+              return {
+                ...c,
+                type: "wall" as Cell["type"],
+                resources: newResources,
+              };
+            }
+            return c;
+          });
+          const finalPlayer = newPlayer.updateCurrentMap(newCells);
+          onPlayerChange(finalPlayer);
+        }
+        break;
+      }
+      case "chest": {
+        let { newPlayer, reward } = player.openChest();
+        if (reward) {
+          console.log("You found:", reward.name, reward.value);
+        }
+        const newCells = cells.map((c) =>
+          c.row === cell.row && c.col === cell.col
+            ? { ...c, type: "floor" as Cell["type"] }
+            : c
+        );
+        newPlayer = newPlayer.updateCurrentMap(newCells);
+        onPlayerChange(newPlayer);
+        break;
+      }
+      default:
+        console.log("No action to perform.");
     }
   };
 
@@ -204,15 +210,7 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    position,
-    onPositionChange,
-    cells,
-    rotation,
-    onShowInfo,
-    onCellSelect,
-    onCellsChange,
-  ]);
+  }, [position, onPositionChange, cells, rotation, onShowInfo, onCellSelect]);
 
   const pixelPosition = gridToPixel(position);
 

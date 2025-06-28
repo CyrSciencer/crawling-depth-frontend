@@ -1,35 +1,26 @@
 import { useState, useEffect } from "react";
 import { Cell, ExitForm } from "../types/cells";
-import { PlayerData, Position } from "../models/Player";
+import { Player } from "../models/Player";
 import { createNewPlayer, getPlayerByCode } from "../utils/playerUtils";
 import {
   loadPlayerMap,
   processFirstTimeMap,
   createDefaultCells,
 } from "../utils/mapUtils";
-import { updateCellSelection, clearCellSelection } from "../utils/cellUtils";
-import {
-  getExitDirection,
-  generateNextRoom,
-  getToNextRoom,
-} from "../events/nextRoomEvent";
+import { clearCellSelection } from "../utils/cellUtils";
+import { generateNextRoom } from "../events/nextRoomEvent";
 
 // GameBoard hook module loading logging | used for debugging module initialization
 console.log("🎮 GameBoard hook module loaded");
 
 // GameBoard hook props interface | used to define the expected props for the useGameBoard hook
 interface UseGameBoardProps {
-  player: PlayerData | null;
-  setPlayer: React.Dispatch<React.SetStateAction<PlayerData>>;
-  onCellsChange?: (cells: Cell[]) => void;
+  player: Player | null;
+  setPlayer: React.Dispatch<React.SetStateAction<Player | null>>;
 }
 
 // Main GameBoard custom hook | used to manage all game board state and logic in a centralized location
-export const useGameBoard = ({
-  player,
-  setPlayer,
-  onCellsChange,
-}: UseGameBoardProps) => {
+export const useGameBoard = ({ player, setPlayer }: UseGameBoardProps) => {
   // Game board visibility state | used to control when to show the game board vs player selection
   const [showGameBoard, setShowGameBoard] = useState<boolean>(false);
   // Map change tracking state | used to trigger map reloading when needed
@@ -40,8 +31,9 @@ export const useGameBoard = ({
   const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
   // Exit form state | used to determine the layout of exits on the map
   const [exitForm, setExitForm] = useState<ExitForm>("NESW");
-  // Game cells state | used to store and manage the current state of all game board cells
-  const [cells, setCells] = useState<Cell[]>(createDefaultCells());
+
+  // Derive cells from player state - SINGLE SOURCE OF TRUTH
+  const cells = player?.getCurrentMap()?.modifiedCells || createDefaultCells();
 
   // New player creation handler | used to create a new player and initialize the game board
   const handleNewPlayer = async (): Promise<void> => {
@@ -65,19 +57,9 @@ export const useGameBoard = ({
     }
   };
 
-  // Cell click handler | used to handle cell selection and update the game state
-  const handleCellClick = (cell: Cell) => {
-    const updatedCells = updateCellSelection(cells, cell);
-    setCells(updatedCells);
-    if (onCellsChange) {
-      onCellsChange(updatedCells);
-    }
-    setSelectedCell(cell);
-  };
-
   // Map loading effect | used to load and process the player's map when they change or the game starts
   useEffect(() => {
-    if (player?.recoveryCode === 0) {
+    if (!player || player.recoveryCode === 0) {
       return;
     }
 
@@ -85,132 +67,54 @@ export const useGameBoard = ({
     const getBaseMap = async () => {
       try {
         // Player map data retrieval | used to fetch the player's current map from the backend
-        const { playerData, mapToUse } = await loadPlayerMap(
-          player?.recoveryCode! as number
+        const { player: fetchedPlayer, mapToUse } = await loadPlayerMap(
+          player.recoveryCode as number
         );
 
         // First-time map processing | used to initialize new maps with chests and traps
         if ((mapToUse as any).firstTime) {
           const processedCells = processFirstTimeMap(mapToUse, chestPresent);
-          setCells(processedCells);
+          const updatedPlayer = fetchedPlayer.updateCurrentMap(processedCells);
+          setPlayer(updatedPlayer);
           setChestPresent(1);
         } else {
-          // Existing map loading | used to load previously saved map data
-          setCells((mapToUse as any).modifiedCells as Cell[]);
+          setPlayer(fetchedPlayer);
         }
-
-        setPlayer(playerData);
       } catch (error) {
         console.error("Error loading map:", error);
       }
     };
 
     getBaseMap();
-  }, [exitForm, mapChanged, showGameBoard, player?.recoveryCode]);
+  }, [mapChanged, showGameBoard, player?.recoveryCode]);
 
   // Player position change effect | used to reset cell selection and update position when player moves
   useEffect(() => {
     if (player?.position) {
       setSelectedCell(null);
-      const updatedCells = clearCellSelection(cells);
-      setCells(updatedCells);
-      if (onCellsChange) {
-        onCellsChange(updatedCells);
+      // Deselect all cells when player moves
+      const newPlayer = player.selectCell(null);
+      if (newPlayer !== player) {
+        setPlayer(newPlayer);
       }
     }
   }, [player?.position]);
   const handleNewMap = () => {
-    console.log("handleNewMap");
     if (player) {
-      const checkForExit = async () => {
-        console.log("checkForExit");
+      const simplifiedExitCheck = async () => {
         try {
-          const exitDirection = getExitDirection(player);
-
-          if (exitDirection) {
-            let exitLinkage: string = "";
-            let entranceLinkage: string = "";
-            if (exitDirection === "N") {
-              exitLinkage = "up";
-              entranceLinkage = "down";
-            } else if (exitDirection === "E") {
-              exitLinkage = "right";
-              entranceLinkage = "left";
-            } else if (exitDirection === "S") {
-              exitLinkage = "down";
-              entranceLinkage = "up";
-            } else if (exitDirection === "W") {
-              exitLinkage = "left";
-              entranceLinkage = "right";
-            }
-
-            const { currentMap } = player;
-            const currentMapID = player.modifiedMaps.findIndex(
-              (m: any) => m.personalID === currentMap
-            );
-            console.log("currentMapID", currentMapID);
-            const newModifiedMaps = [...player.modifiedMaps];
-            if ((newModifiedMaps[currentMapID] as any).exitLink[exitLinkage]) {
-              return console.log("already linked");
-            }
-            const result = await generateNextRoom(exitDirection);
-            console.log("result", result);
-            if (result) {
-              const { roomData } = result;
-              console.log("exitDirection", exitDirection);
-
-              console.log("Next room data:", roomData);
-
-              console.log("currentMapID", currentMapID);
-              const newModifiedMaps = [...player.modifiedMaps];
-
-              console.log(
-                "currentModifiedMaps",
-                (newModifiedMaps[currentMapID] as any).exitLink
-              );
-
-              (newModifiedMaps[currentMapID] as any).exitLink[exitLinkage] = (
-                roomData as any
-              )._id;
-              console.log("roomData", roomData);
-              const newRoom = {
-                personalID: `player_${Date.now()}_${roomData._id}`,
-                map: roomData._id,
-                modifiedCells: roomData.cells,
-                exitLink: {
-                  up: null,
-                  down: null,
-                  left: null,
-                  right: null,
-                },
-                firstTime: true,
-              };
-              //link room data to current map
-              (newRoom as any).exitLink[entranceLinkage] = (
-                newModifiedMaps[currentMapID] as any
-              ).map;
-              console.log("newRoom", newRoom);
-
-              newModifiedMaps.push(newRoom);
-              console.log("newModifiedMaps", newModifiedMaps);
-              const newPlayer = { ...player, modifiedMaps: newModifiedMaps };
-              console.log("player map data", player.modifiedMaps);
-              setPlayer(newPlayer as PlayerData);
-            } else {
-              console.log("No exit found");
-            }
-          } else {
-            console.log("No exit found");
+          const newPlayer = await player.discoverNewRoom();
+          // The discoverNewRoom method returns the same player instance if no changes are made.
+          // We only update the state if a new instance is returned.
+          if (newPlayer !== player) {
+            setPlayer(newPlayer);
           }
         } catch (error) {
-          // It's normal for this to have an error when not on an exit,
-          // as nextRoomEvent returns null, and accessing roomData.cells fails.
-          // The console.error can be removed if this is expected behavior.
-          // console.error("Error checking for exit:", error);
+          console.error("Error during room discovery:", error);
         }
       };
 
-      checkForExit();
+      simplifiedExitCheck();
     }
   };
 
@@ -227,10 +131,8 @@ export const useGameBoard = ({
     exitForm,
     setExitForm,
     cells,
-    setCells,
     handleNewPlayer,
     handleGetPlayer,
-    handleCellClick,
     handleNewMap,
   };
 };
