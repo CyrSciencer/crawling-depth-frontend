@@ -1,4 +1,4 @@
-import { Inventory, Resource, Consumable, Player } from "../types/player";
+import { Inventory, Resource, Consumable, PlayerData } from "../models/Player";
 import {
   ConsumableStats,
   consumableRecipes,
@@ -106,11 +106,11 @@ export const handleConsumableCraft = (
 // Consumable use handler function | used to apply consumable effects and update player state
 export const handleConsumableUse = (
   consumable: Consumable,
-  player: Player,
+  player: PlayerData,
   inventory: Inventory,
-  onPlayerChange: (newPlayer: Player) => void
+  onPlayerChange: (newPlayer: PlayerData) => void
 ) => {
-  let updatedPlayer: Player;
+  let updatedPlayer: PlayerData;
 
   // Consumable effect application switch | used to apply different effects based on consumable type
   switch (consumable.impactStat) {
@@ -245,7 +245,7 @@ export const handleConsumableUse = (
       return;
   }
 
-  onPlayerChange(updatedPlayer as Player);
+  onPlayerChange(updatedPlayer as PlayerData);
   console.log(
     `Using ${consumable.impactStat} with impact ${consumable.impactValue}`
   );

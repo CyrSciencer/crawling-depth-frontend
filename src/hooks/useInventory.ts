@@ -5,8 +5,8 @@ import {
   Block,
   Tool,
   Consumable,
-  Player,
-} from "../types/player";
+  PlayerData,
+} from "../models/Player";
 import { ConsumableStats } from "../config/consumablesConfig";
 import {
   getAvailableBlocks,
@@ -28,8 +28,8 @@ console.log("🎒 Inventory hook module loaded");
 interface UseInventoryProps {
   inventory: Inventory;
   onInventoryChange: (newInventory: Inventory) => void;
-  player: Player;
-  onPlayerChange: (newPlayer: Player) => void;
+  player: PlayerData;
+  onPlayerChange: (newPlayer: PlayerData) => void;
 }
 
 // Main Inventory custom hook | used to manage all inventory state and logic in a centralized location

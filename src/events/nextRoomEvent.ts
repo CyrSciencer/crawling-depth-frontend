@@ -1,4 +1,4 @@
-import { Player } from "../types/player";
+import { PlayerData } from "../models/Player";
 import { EXIT_POSITIONS, EXIT_FORMS, ExitForm, Cell } from "../types/cells";
 import axios from "axios";
 
@@ -14,7 +14,7 @@ const getNextRoom = async (exitForm: string) => {
 };
 
 export const getExitEventDetails = (
-  player: Player
+  player: PlayerData
 ): { row: number; col: number } | null => {
   const { position } = player;
 
@@ -49,7 +49,7 @@ const oppositeExit = {
 };
 
 export const getExitDirection = (
-  player: Player
+  player: PlayerData
 ): "N" | "E" | "S" | "W" | null => {
   const exitPosition = getExitEventDetails(player);
   if (!exitPosition) {
@@ -77,9 +77,9 @@ export const generateNextRoom = async (
   return { roomData, exitDirection };
 };
 export const getToNextRoom = async (
-  player: Player,
+  player: PlayerData,
   setCells: (cells: Cell[]) => void,
-  setPlayer: (player: Player) => void
+  setPlayer: (player: PlayerData) => void
 ) => {
   const { position, currentMap, modifiedMaps } = player;
   let exitDirection: string = " ";

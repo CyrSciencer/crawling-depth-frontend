@@ -1,12 +1,12 @@
 import { Cell } from "../types/cells";
-import { Player } from "../types/player";
+import { PlayerData } from "../models/Player";
 import axios from "axios";
 
 // Map utilities module loading logging | used for debugging module initialization
 console.log("🗺️ Map utilities module loaded");
 
 // Current map finder function | used to locate the player's current map from their modified maps array
-export const findCurrentMap = (playerData: Player) => {
+export const findCurrentMap = (playerData: PlayerData) => {
   const { currentMap } = playerData;
   // Map search and logging | used to find and log the current map being used
   const mapToUse = playerData.modifiedMaps.find((map: any) => {

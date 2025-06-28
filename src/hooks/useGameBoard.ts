@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Cell, ExitForm } from "../types/cells";
-import { Player, Position } from "../types/player";
+import { PlayerData, Position } from "../models/Player";
 import { createNewPlayer, getPlayerByCode } from "../utils/playerUtils";
 import {
   loadPlayerMap,
@@ -19,8 +19,8 @@ console.log("🎮 GameBoard hook module loaded");
 
 // GameBoard hook props interface | used to define the expected props for the useGameBoard hook
 interface UseGameBoardProps {
-  player: Player | null;
-  setPlayer: React.Dispatch<React.SetStateAction<Player>>;
+  player: PlayerData | null;
+  setPlayer: React.Dispatch<React.SetStateAction<PlayerData>>;
   onCellsChange?: (cells: Cell[]) => void;
 }
 
@@ -195,7 +195,7 @@ export const useGameBoard = ({
               console.log("newModifiedMaps", newModifiedMaps);
               const newPlayer = { ...player, modifiedMaps: newModifiedMaps };
               console.log("player map data", player.modifiedMaps);
-              setPlayer(newPlayer);
+              setPlayer(newPlayer as PlayerData);
             } else {
               console.log("No exit found");
             }

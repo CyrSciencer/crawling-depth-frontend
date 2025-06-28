@@ -1,5 +1,5 @@
 import { ResourceType } from "./resourceConfig";
-import { Consumable } from "../types/player";
+import { Consumable } from "../models/Player";
 export enum ConsumableStats {
   HEALTH = "health",
   CHARGE = "charge",

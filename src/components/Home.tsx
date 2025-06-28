@@ -3,9 +3,8 @@ import { Container, Typography, Box } from "@mui/material";
 import { GameBoard } from "./game/GameBoard";
 import { MapCreator } from "./mapCreator/MapCreator";
 import PlayerPawn from "./game/PlayerPawn";
-import { Inventory, Position } from "../types/player";
+import { Inventory, Position, PlayerData } from "../models/Player";
 import { Cell } from "../types/cells";
-import Player from "../types/player";
 import { InventoryWindow } from "./game/Inventory";
 import "./home.css";
 import axios from "axios";
@@ -31,7 +30,7 @@ const Home: React.FC = () => {
   console.log("ℹ️ Initial show info state set:", showInfo);
 
   // Player state management | used to store and manage all player data including inventory, position, and game state
-  const [player, setPlayer] = useState<Player>({
+  const [player, setPlayer] = useState<PlayerData>({
     inventory: {
       resources: {
         stone: 0,
@@ -60,7 +59,7 @@ const Home: React.FC = () => {
   // Inventory change handler | used to update the player's inventory when items are crafted, used, or equipped
   const handleInventoryChange = (newInventory: Inventory) => {
     console.log("📊 New inventory:", newInventory);
-    setPlayer((prev) => ({
+    setPlayer((prev: PlayerData) => ({
       ...prev,
       inventory: newInventory,
     }));
@@ -68,7 +67,7 @@ const Home: React.FC = () => {
   };
 
   // Player change handler | used to update the entire player object when player data changes
-  const handlePlayerChange = (newPlayer: Player) => {
+  const handlePlayerChange = (newPlayer: PlayerData) => {
     console.log("📊 New player:", newPlayer);
     setPlayer(newPlayer);
     console.log("✅ Player updated");
@@ -77,7 +76,7 @@ const Home: React.FC = () => {
   // Position change handler | used to update the player's position when they move on the game board
   const handlePositionChange = (newPosition: Position) => {
     console.log("📊 New position:", newPosition);
-    setPlayer((prev) => ({ ...prev, position: newPosition }));
+    setPlayer((prev: PlayerData) => ({ ...prev, position: newPosition }));
     console.log("✅ Position updated");
   };
 
@@ -96,7 +95,7 @@ const Home: React.FC = () => {
   };
 
   // Player save handler | used to save the current player state to the backend database
-  const savePlayer = async (player: Player) => {
+  const savePlayer = async (player: PlayerData) => {
     console.log("📊 Player data to save:", player);
     // Map data update | used to sync the current game cells with the player's map data
     const { currentMap } = player;

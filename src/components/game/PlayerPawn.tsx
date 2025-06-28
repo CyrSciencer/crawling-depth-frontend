@@ -1,28 +1,16 @@
+import { Direction, gridToPixel, getFacingCell } from "../../types/player";
 import {
   Position,
-  Direction,
-  gridToPixel,
-  getFacingCell,
-  canMoveToCell,
-  mineCell,
-  placeBlock,
-} from "../../types/player";
-import Player from "../../types/player";
+  Inventory,
+  Tool,
+  Block,
+  PlayerData,
+} from "../../models/Player";
 import { Cell } from "../../types/cells";
 import { useRef, useState, useEffect } from "react";
 import "./PlayerPawn.css";
-import { Inventory, Tool } from "../../types/player";
 import { chestEvent } from "../../events/chestEvent";
-
-interface Block {
-  stoneBlock?: number;
-  ironBlock?: number;
-  silverBlock?: number;
-  goldBlock?: number;
-  tinBlock?: number;
-  zincBlock?: number;
-  crystalBlock?: number;
-}
+import { mineCell, placeBlock, canMoveToCell } from "../../utils/cellUtils";
 
 interface PlayerPawnProps {
   position: Position;
@@ -30,7 +18,7 @@ interface PlayerPawnProps {
   cells: Cell[];
   onCellSelect?: (cell: Cell | null) => void;
   onShowInfo?: (show: boolean) => void;
-  player: Player;
+  player: PlayerData;
   onCellsChange: (cells: Cell[]) => void;
   onInventoryChange: (inventory: Inventory) => void;
 }
@@ -94,7 +82,6 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
 
     // Vérifier les équipements du joueur
     const equippedItems = player.inventory.equiped || {};
-
     // Vérifier si le joueur a une pioche équipée et fait face à un mur
     if (
       cell.type === "wall" &&

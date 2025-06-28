@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Cell } from "../../types/cells";
 import "./GameBoard.css";
 import { PlayerSelection } from "./PlayerSelection";
-import { Player, Position } from "../../types/player";
+import { PlayerData, Position } from "../../models/Player";
 import { useGameBoard } from "../../hooks/useGameBoard";
 import { getCellClassName, renderCellInfo } from "../../utils/cellUtils";
 
@@ -12,8 +12,8 @@ console.log("🎮 GameBoard component module loaded");
 // GameBoard component props interface | used to define the expected props for the GameBoard component
 interface GameBoardProps {
   onCellsChange?: (cells: Cell[]) => void;
-  player: Player | null;
-  setPlayer: React.Dispatch<React.SetStateAction<Player>>;
+  player: PlayerData | null;
+  setPlayer: React.Dispatch<React.SetStateAction<PlayerData>>;
 }
 
 // Main GameBoard component function | used to render the game grid and handle player interactions
@@ -25,7 +25,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   // GameBoard component initialization logging | used for debugging component lifecycle
   console.log("🎮 GameBoard component initializing...");
   // Props validation logging | used for debugging to verify props are passed correctly
-  const { position } = player as Player;
+  const { position } = player as PlayerData;
   console.log("📊 maps data", player?.modifiedMaps);
 
   // GameBoard state and handlers from custom hook | used to manage game board state and interactions

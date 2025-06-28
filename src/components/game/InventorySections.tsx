@@ -1,5 +1,5 @@
 import React from "react";
-import { Inventory, Resource, Block, Tool } from "../../types/player";
+import { Inventory, Resource, Block, Tool } from "../../models/Player";
 import {
   ConsumableStats,
   ConsumableRecipe,

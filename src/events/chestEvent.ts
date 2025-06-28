@@ -1,4 +1,4 @@
-import { Player } from "../types/player";
+import { PlayerData } from "../models/Player";
 import { Cell } from "../types/cells";
 import { ConsumableStats } from "../config/consumablesConfig";
 
@@ -27,7 +27,7 @@ const REWARDS: Reward[] = [
 console.log("🎁 REWARDS configuration created with", REWARDS.length, "rewards");
 console.log("📊 Rewards:", REWARDS);
 
-export const chestEvent = (cell: Cell, player: Player): void => {
+export const chestEvent = (cell: Cell, player: PlayerData): void => {
   console.log("📦 Chest event triggered");
   console.log("📍 Cell position:", cell.row, cell.col);
   console.log("🎯 Cell type:", cell.type);

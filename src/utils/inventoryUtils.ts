@@ -4,8 +4,8 @@ import {
   Block,
   Tool,
   Consumable,
-  Player,
-} from "../types/player";
+  PlayerData,
+} from "../models/Player";
 import {
   ConsumableStats,
   consumableRecipes,
@@ -13,6 +13,9 @@ import {
 
 // Inventory utilities module loading logging | used for debugging module initialization
 console.log("🎒 Inventory utilities module loaded");
+
+// Player type alias for local use
+type Player = PlayerData;
 
 // Available blocks getter function | used to extract list of blocks that player has in their inventory
 export const getAvailableBlocks = (inventory: Inventory): string[] => {
