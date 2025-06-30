@@ -1,5 +1,5 @@
 import React from "react";
-import { Inventory, Player } from "../../models/Player";
+import { Inventory, Player } from "../../models/PlayerModel";
 import "./Inventory.css";
 import { useInventory } from "../../hooks/useInventory";
 import {

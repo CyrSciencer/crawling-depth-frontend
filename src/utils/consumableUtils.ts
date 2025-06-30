@@ -1,4 +1,9 @@
-import { Inventory, Resource, Consumable, PlayerData } from "../models/Player";
+import {
+  Inventory,
+  Resource,
+  Consumable,
+  PlayerData,
+} from "../models/PlayerModel";
 import {
   ConsumableStats,
   consumableRecipes,

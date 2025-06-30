@@ -1,5 +1,5 @@
 import { Cell } from "../types/cells";
-import { PlayerData, Player } from "../models/Player";
+import { PlayerData, Player } from "../models/PlayerModel";
 import axios from "axios";
 
 // Map utilities module loading logging | used for debugging module initialization
@@ -61,13 +61,4 @@ export const loadPlayerMap = async (recoveryCode: number) => {
     }
     throw error;
   }
-};
-
-// Default cells creation function | used to generate a 9x9 grid of floor cells for initialization
-export const createDefaultCells = (): Cell[] => {
-  return Array.from({ length: 81 }, (_, index) => ({
-    row: Math.floor(index / 9),
-    col: index % 9,
-    type: "floor",
-  }));
 };

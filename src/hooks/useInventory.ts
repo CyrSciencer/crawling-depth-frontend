@@ -7,7 +7,7 @@ import {
   Consumable,
   PlayerData,
   Player,
-} from "../models/Player";
+} from "../models/PlayerModel";
 import { ConsumableStats } from "../config/consumablesConfig";
 import {
   getAvailableBlocks,

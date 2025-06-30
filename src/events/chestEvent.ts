@@ -1,4 +1,4 @@
-import { PlayerData } from "../models/Player";
+import { PlayerData } from "../models/PlayerModel";
 import { Cell } from "../types/cells";
 import { ConsumableStats } from "../config/consumablesConfig";
 

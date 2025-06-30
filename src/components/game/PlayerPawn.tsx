@@ -6,12 +6,12 @@ import {
   Block,
   PlayerData,
   Resource,
-} from "../../models/Player";
+} from "../../models/PlayerModel";
 import { Cell } from "../../types/cells";
 import { useRef, useState, useEffect } from "react";
 import "./PlayerPawn.css";
 import { canMoveToCell } from "../../utils/cellUtils";
-import { Player } from "../../models/Player";
+import { Player } from "../../models/PlayerModel";
 import { log } from "console";
 
 interface PlayerPawnProps {

@@ -5,7 +5,7 @@ import {
   Tool,
   Consumable,
   PlayerData,
-} from "../models/Player";
+} from "../models/PlayerModel";
 import {
   ConsumableStats,
   consumableRecipes,

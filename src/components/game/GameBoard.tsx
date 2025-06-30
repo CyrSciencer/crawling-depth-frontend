@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Cell } from "../../types/cells";
 import "./GameBoard.css";
 import { PlayerSelection } from "./PlayerSelection";
-import { Player, Position } from "../../models/Player";
+import { Player, Position } from "../../models/PlayerModel";
 import { useGameBoard } from "../../hooks/useGameBoard";
 import { getCellClassName, renderCellInfo } from "../../utils/cellUtils";
 

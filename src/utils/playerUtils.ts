@@ -1,5 +1,5 @@
 import axios from "axios";
-import { PlayerData, Player } from "../models/Player";
+import { PlayerData, Player } from "../models/PlayerModel";
 import { ExitForm } from "../types/cells";
 
 // Player utilities module loading logging | used for debugging module initialization

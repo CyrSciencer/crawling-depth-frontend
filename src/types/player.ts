@@ -1,5 +1,5 @@
 import { Cell } from "./cells";
-import { PlayerData, Position, Block, Resource } from "../models/Player";
+import { PlayerData, Position, Block, Resource } from "../models/PlayerModel";
 
 export enum Direction {
   UP = 360,

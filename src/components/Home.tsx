@@ -3,7 +3,7 @@ import { Container, Typography, Box } from "@mui/material";
 import { GameBoard } from "./game/GameBoard";
 import { MapCreator } from "./mapCreator/MapCreator";
 import PlayerPawn from "./game/PlayerPawn";
-import { Inventory, Position, Player } from "../models/Player";
+import { Inventory, Position, Player } from "../models/PlayerModel";
 import { Cell } from "../types/cells";
 import { InventoryWindow } from "./game/Inventory";
 import "./home.css";

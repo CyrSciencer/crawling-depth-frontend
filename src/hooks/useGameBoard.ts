@@ -1,13 +1,8 @@
 import { useState, useEffect } from "react";
 import { Cell, ExitForm } from "../types/cells";
-import { Player } from "../models/Player";
+import { Player } from "../models/PlayerModel";
+import { Map } from "../models/MapModel";
 import { createNewPlayer, getPlayerByCode } from "../utils/playerUtils";
-import {
-  loadPlayerMap,
-  processFirstTimeMap,
-  createDefaultCells,
-} from "../utils/mapUtils";
-import { clearCellSelection } from "../utils/cellUtils";
 import { generateNextRoom } from "../events/nextRoomEvent";
 
 // GameBoard hook module loading logging | used for debugging module initialization
@@ -25,15 +20,13 @@ export const useGameBoard = ({ player, setPlayer }: UseGameBoardProps) => {
   const [showGameBoard, setShowGameBoard] = useState<boolean>(false);
   // Map change tracking state | used to trigger map reloading when needed
   const [mapChanged, setMapChanged] = useState<boolean>(false);
-  // Chest presence tracking state | used to track if a chest has been placed on the current map
-  const [chestPresent, setChestPresent] = useState<number>(0);
   // Selected cell state | used to track which cell is currently selected by the player
   const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
   // Exit form state | used to determine the layout of exits on the map
   const [exitForm, setExitForm] = useState<ExitForm>("NESW");
 
   // Derive cells from player state - SINGLE SOURCE OF TRUTH
-  const cells = player?.getCurrentMap()?.modifiedCells || createDefaultCells();
+  const cells = player?.getCurrentMap()?.cells || Map.createDefaultCells();
 
   // New player creation handler | used to create a new player and initialize the game board
   const handleNewPlayer = async (): Promise<void> => {
@@ -63,30 +56,29 @@ export const useGameBoard = ({ player, setPlayer }: UseGameBoardProps) => {
       return;
     }
 
-    setChestPresent(0);
-    const getBaseMap = async () => {
+    const processMap = async () => {
       try {
-        // Player map data retrieval | used to fetch the player's current map from the backend
-        const { player: fetchedPlayer, mapToUse } = await loadPlayerMap(
-          player.recoveryCode as number
-        );
+        const currentMap = player.getCurrentMap();
 
-        // First-time map processing | used to initialize new maps with chests and traps
-        if ((mapToUse as any).firstTime) {
-          const processedCells = processFirstTimeMap(mapToUse, chestPresent);
-          const updatedPlayer = fetchedPlayer.updateCurrentMap(processedCells);
+        if (currentMap && currentMap.firstTime) {
+          const processedMap = currentMap.processedForFirstTime();
+          const newMaps = player.maps.map((m) =>
+            m.personalID === processedMap.personalID ? processedMap : m
+          );
+          const newPlayerData = {
+            ...player.toJSON(),
+            modifiedMaps: newMaps.map((m) => m.toJSON()),
+          };
+          const updatedPlayer = new Player(newPlayerData);
           setPlayer(updatedPlayer);
-          setChestPresent(1);
-        } else {
-          setPlayer(fetchedPlayer);
         }
       } catch (error) {
-        console.error("Error loading map:", error);
+        console.error("Error processing map:", error);
       }
     };
 
-    getBaseMap();
-  }, [mapChanged, showGameBoard, player?.recoveryCode]);
+    processMap();
+  }, [player]);
 
   // Player position change effect | used to reset cell selection and update position when player moves
   useEffect(() => {
@@ -124,8 +116,6 @@ export const useGameBoard = ({ player, setPlayer }: UseGameBoardProps) => {
     setShowGameBoard,
     mapChanged,
     setMapChanged,
-    chestPresent,
-    setChestPresent,
     selectedCell,
     setSelectedCell,
     exitForm,

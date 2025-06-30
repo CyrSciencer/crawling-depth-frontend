@@ -1,11 +1,8 @@
 import { ConsumableStats } from "../config/consumablesConfig";
 import { Cell, EXIT_POSITIONS } from "../types/cells";
 import { generateNextRoom } from "../events/nextRoomEvent";
-import {
-  calculateResourceGain,
-  updateCellSelection,
-  clearCellSelection,
-} from "../utils/cellUtils";
+import { calculateResourceGain } from "../utils/cellUtils";
+import { Map } from "./MapModel";
 
 // Chest Reward Configuration
 interface Reward {
@@ -99,6 +96,7 @@ export interface ModifiedMap {
     right: string | null;
   };
   firstTime: boolean;
+  chest: boolean;
 }
 
 export interface PlayerData {
@@ -113,16 +111,20 @@ export interface PlayerData {
 
 export class Player implements PlayerData {
   public readonly inventory: Inventory;
-  public readonly modifiedMaps: ModifiedMap[];
+  public readonly maps: Map[];
   public readonly position: Position;
   public readonly currentMap: string;
   public readonly movementPerTurn: number;
   public readonly health: number;
   public readonly recoveryCode: number;
 
+  public get modifiedMaps(): ModifiedMap[] {
+    return this.maps.map((map) => map.toJSON());
+  }
+
   constructor(data: PlayerData) {
     this.inventory = data.inventory;
-    this.modifiedMaps = data.modifiedMaps;
+    this.maps = data.modifiedMaps.map((mapData) => new Map(mapData));
     this.position = data.position;
     this.currentMap = data.currentMap;
     this.movementPerTurn = data.movementPerTurn;
@@ -134,13 +136,13 @@ export class Player implements PlayerData {
    * Finds and returns the full ModifiedMap object for the player's current map.
    * @returns The ModifiedMap object or null if not found.
    */
-  public getCurrentMap(): ModifiedMap | null {
-    const mapToUse = this.modifiedMaps.find(
+  public getCurrentMap(): Map | null {
+    const mapToUse = this.maps.find(
       (map) => map.personalID === this.currentMap
     );
 
     if (!mapToUse) {
-      console.error("Current map not found in player's modifiedMaps array.");
+      console.error("Current map not found in player's maps array.");
       return null;
     }
 
@@ -284,12 +286,21 @@ export class Player implements PlayerData {
     const currentMap = this.getCurrentMap();
     if (!currentMap) return this;
 
-    const currentCells = currentMap.modifiedCells;
-    const newCells = cell
-      ? updateCellSelection(currentCells, cell)
-      : clearCellSelection(currentCells);
+    const newMap = cell
+      ? currentMap.withCellSelection(cell)
+      : currentMap.withoutCellSelection();
 
-    return this.updateCurrentMap(newCells);
+    if (newMap === currentMap) return this; // No change was made
+
+    const newMaps = this.maps.map((m) =>
+      m.personalID === newMap.personalID ? newMap : m
+    );
+
+    const newPlayerData = {
+      ...this.toJSON(),
+      modifiedMaps: newMaps.map((m) => m.toJSON()),
+    };
+    return new Player(newPlayerData);
   }
 
   /**
@@ -416,56 +427,40 @@ export class Player implements PlayerData {
           entranceLinkage = "right";
         }
 
-        const currentMapInPlayer = this.getCurrentMap();
-        if (!currentMapInPlayer) {
-          throw new Error(
-            "Could not find current map details in player state."
-          );
-        }
-
-        // Check if there is already a map linked at this exit
-        if ((currentMapInPlayer.exitLink as any)[exitLinkage]) {
-          console.log("Exit is already linked to another map.");
-          return this; // No change, return current instance
-        }
-
         const result = await generateNextRoom(exitDirection);
         if (result) {
           const { roomData } = result;
-          const newModifiedMaps = [...this.modifiedMaps];
-          const currentMapIndex = newModifiedMaps.findIndex(
-            (m) => m.personalID === this.currentMap
-          );
+          const newMap = Map.fromAPIData(roomData);
 
-          if (currentMapIndex === -1) {
+          const currentMap = this.getCurrentMap();
+          if (!currentMap) {
             throw new Error(
-              "Could not find current map in modifiedMaps array for updating."
+              "Current map not found while discovering new room."
             );
           }
 
-          // Link current map to the new room
-          (newModifiedMaps[currentMapIndex].exitLink as any)[exitLinkage] = (
-            roomData as any
-          )._id;
+          // Link current map to the new room and vice-versa
+          const updatedCurrentMap = currentMap.withExitLink(
+            exitLinkage as "up" | "down" | "left" | "right",
+            newMap.map
+          );
+          const updatedNewMap = newMap.withExitLink(
+            entranceLinkage as "up" | "down" | "left" | "right",
+            currentMap.map
+          );
 
-          const newRoom: ModifiedMap = {
-            personalID: `player_${Date.now()}_${(roomData as any)._id}`,
-            map: (roomData as any)._id,
-            modifiedCells: (roomData as any).cells,
-            exitLink: { up: null, down: null, left: null, right: null },
-            firstTime: true,
-          };
-
-          // Link new room back to the current map
-          (newRoom.exitLink as any)[entranceLinkage] =
-            newModifiedMaps[currentMapIndex].map;
-
-          newModifiedMaps.push(newRoom);
+          // Update the player's list of maps
+          const newMaps = this.maps.map((m) =>
+            m.personalID === updatedCurrentMap.personalID
+              ? updatedCurrentMap
+              : m
+          );
+          newMaps.push(updatedNewMap);
 
           // Return a new Player instance with the updated maps array
           return new Player({
-            ...this.toJSON(), // Get a clean data object of the current player
-            modifiedMaps: newModifiedMaps,
+            ...this.toJSON(),
+            modifiedMaps: newMaps.map((m) => m.toJSON()),
           });
         }
       }
@@ -524,7 +519,7 @@ export class Player implements PlayerData {
       return this;
     }
 
-    const nextMapData = this.modifiedMaps.find((m) => m.map === nextMapId);
+    const nextMapData = this.maps.find((m) => m.map === nextMapId);
     if (!nextMapData) return this;
 
     const newPosition = newPositionMap[exitDirection];
@@ -580,13 +575,20 @@ export class Player implements PlayerData {
    * @returns A new Player instance with the updated modifiedMaps array.
    */
   public updateCurrentMap(newCells: Cell[]): Player {
-    const newModifiedMaps = this.modifiedMaps.map((map) => {
-      if (map.personalID === this.currentMap) {
-        return { ...map, modifiedCells: newCells };
-      }
-      return map;
-    });
+    const currentMap = this.getCurrentMap();
+    if (!currentMap) return this;
 
-    return new Player({ ...this.toJSON(), modifiedMaps: newModifiedMaps });
+    const newMap = currentMap.withUpdatedCells(newCells);
+
+    const newMaps = this.maps.map((m) =>
+      m.personalID === newMap.personalID ? newMap : m
+    );
+
+    const newPlayerData = {
+      ...this.toJSON(),
+      modifiedMaps: newMaps.map((m) => m.toJSON()),
+    };
+
+    return new Player(newPlayerData);
   }
 }

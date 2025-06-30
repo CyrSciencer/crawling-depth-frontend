@@ -1,5 +1,5 @@
 import { Cell } from "../types/cells";
-import { PlayerData, Resource, Block, Player } from "../models/Player";
+import { PlayerData, Resource, Block, Player } from "../models/PlayerModel";
 
 // Cell utilities module loading logging | used for debugging module initialization
 console.log("🎯 Cell utilities module loaded");
@@ -28,25 +28,6 @@ export const getCellClassName = (cell: Cell): string => {
     : "";
 
   return `${baseClass} ${resourceClass}`.trim();
-};
-
-// Cell selection update function | used to update the selection state of cells when a cell is clicked
-export const updateCellSelection = (
-  cells: Cell[],
-  selectedCell: Cell
-): Cell[] => {
-  return cells.map((c) => ({
-    ...c,
-    isSelected: c.row === selectedCell.row && c.col === selectedCell.col,
-  }));
-};
-
-// Cell selection clearing function | used to clear all cell selections when player moves or selection changes
-export const clearCellSelection = (cells: Cell[]): Cell[] => {
-  return cells.map((cell) => ({
-    ...cell,
-    isSelected: false,
-  }));
 };
 
 // Cell resource information extractor | used to format cell resource information for display
