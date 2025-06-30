@@ -7,9 +7,23 @@ console.log("🗺️ Map utilities module loaded");
 
 // First-time map processing function | used to initialize a map with chests and traps for new players
 export const processFirstTimeMap = (mapToUse: any, chestPresent: number) => {
+  const restrictedCells = [
+    { row: 7, col: 4 },
+    { row: 1, col: 4 },
+    { row: 4, col: 7 },
+    { row: 4, col: 1 },
+  ];
   // Floor cells collection | used to identify all floor cells that can be modified
-  const floorCells = mapToUse.modifiedCells.filter(
+  let floorCells = mapToUse.modifiedCells.filter(
     (cell: Cell) => cell.type === "floor"
+  );
+  // filter out restricted cells
+  floorCells = floorCells.filter(
+    (cell: Cell) =>
+      !restrictedCells.some(
+        (restricted) =>
+          restricted.row === cell.row && restricted.col === cell.col
+      )
   );
 
   // Chest placement logic | used to randomly place a chest on a floor cell if conditions are met

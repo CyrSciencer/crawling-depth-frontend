@@ -1,5 +1,4 @@
-import { PlayerData } from "../models/PlayerModel";
-import { EXIT_POSITIONS, EXIT_FORMS, ExitForm, Cell } from "../types/cells";
+import { EXIT_FORMS, ExitForm } from "../types/cells";
 import axios from "axios";
 
 const getNextRoom = async (exitForm: string) => {

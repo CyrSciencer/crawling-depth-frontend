@@ -1,4 +1,4 @@
-import { Cell } from "../types/cells";
+import { Cell, EXIT_POSITIONS } from "../types/cells";
 import { ModifiedMap } from "./PlayerModel";
 
 console.log("🗺️ Map model module loaded");
@@ -66,8 +66,23 @@ export class Map implements ModifiedMap {
 
     const newCells = [...this.modifiedCells]; // Create a mutable copy
 
+    const restrictedCells = [
+      { row: 7, col: 4 },
+      { row: 1, col: 4 },
+      { row: 4, col: 7 },
+      { row: 4, col: 1 },
+    ];
     // Find floor cells for potential modification
-    const floorCells = newCells.filter((cell) => cell.type === "floor");
+    let floorCells = newCells.filter((cell) => cell.type === "floor");
+
+    // filter out restricted cells
+    floorCells = floorCells.filter(
+      (cell: Cell) =>
+        !restrictedCells.some(
+          (restricted) =>
+            restricted.row === cell.row && restricted.col === cell.col
+        )
+    );
 
     // Place a chest if the base map allows it and floor cells are available
     if (this.chest && floorCells.length > 0) {
@@ -81,8 +96,12 @@ export class Map implements ModifiedMap {
     }
 
     // Randomly place traps on some of the remaining floor cells
+    const exitPositions = Object.values(EXIT_POSITIONS);
     newCells.forEach((cell) => {
-      if (cell.type === "floor" && Math.random() < 0.2) {
+      const isExit = exitPositions.some(
+        (p) => p.row === cell.row && p.col === cell.col
+      );
+      if (cell.type === "floor" && !isExit && Math.random() < 0.2) {
         cell.type = "trap";
       }
     });

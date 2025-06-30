@@ -7,6 +7,14 @@ import { ResourceSelector } from "./ResourceSelector";
 import { RESOURCE_VALUES, ResourceType } from "../../config/resourceConfig";
 import axios from "axios";
 
+const nonModifiableCells = [
+  { row: 4, col: 4 },
+  { row: 7, col: 4 },
+  { row: 1, col: 4 },
+  { row: 4, col: 7 },
+  { row: 4, col: 1 },
+];
+
 export const MapCreator: React.FC = () => {
   const [exitForm, setExitForm] = useState<ExitForm>("NESW");
   const [chest, setChest] = useState<boolean>(false);
@@ -22,6 +30,12 @@ export const MapCreator: React.FC = () => {
         col: index % 9,
         type: "floor",
       };
+      const isNonModifiable = nonModifiableCells.some(
+        (c) => c.row === cell.row && c.col === cell.col
+      );
+      if (isNonModifiable) {
+        return cell;
+      }
       return levelBorder(cellExit(cell, form));
     });
   };
@@ -35,6 +49,12 @@ export const MapCreator: React.FC = () => {
   }, [exitForm]);
 
   const handleCellClick = (cell: Cell) => {
+    const isNonModifiable = nonModifiableCells.some(
+      (c) => c.row === cell.row && c.col === cell.col
+    );
+    if (isNonModifiable) {
+      return;
+    }
     // Update selection state
     const updatedCells = cells.map((c) => {
       if (c.row === cell.row && c.col === cell.col) {

@@ -61,6 +61,17 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
   };
 
   const checkPossibleAction = () => {
+    // Action 1: Check for room transition based on the player's current position.
+    if (player.canGoNextRoom()) {
+      const popupX = position.col * 47.5 + 37;
+      const popupY = position.row * 47.5 - 37;
+      setActionPosition({ x: popupX, y: popupY });
+      setActionType("next_room");
+      setShowActionPopup(true);
+      return; // Prioritize this action.
+    }
+
+    // Action 2: Check for actions on the cell the player is facing.
     const facingCell = getFacingCell(position, rotation);
     const cell = getCellAtPosition(facingCell);
 
@@ -110,6 +121,13 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
   }, [position, rotation, player.inventory.equiped]);
 
   const handleAction = () => {
+    // Handle room transition first as it doesn't depend on a facing cell.
+    if (actionType === "next_room") {
+      const newPlayer = player.goToNextRoom();
+      onPlayerChange(newPlayer);
+      return;
+    }
+
     const facingCell = getFacingCell(position, rotation);
     if (!facingCell) return;
 
@@ -118,6 +136,10 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
 
     switch (actionType) {
       case "mine": {
+        if (cell.type === "unbreakable") {
+          console.log("Unbreakable wall");
+          return;
+        }
         let newPlayer = player.mine(cell);
         const newCells = cells.map((c) =>
           c.row === cell.row && c.col === cell.col
@@ -252,6 +274,8 @@ const PlayerPawn: React.FC<PlayerPawnProps> = ({
             ? "Place Block"
             : actionType === "chest"
             ? "Open Chest"
+            : actionType === "next_room"
+            ? "Enter Room"
             : "No Action"}
         </div>
       )}

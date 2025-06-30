@@ -3,7 +3,6 @@ import { Cell, ExitForm } from "../types/cells";
 import { Player } from "../models/PlayerModel";
 import { Map } from "../models/MapModel";
 import { createNewPlayer, getPlayerByCode } from "../utils/playerUtils";
-import { generateNextRoom } from "../events/nextRoomEvent";
 
 // GameBoard hook module loading logging | used for debugging module initialization
 console.log("🎮 GameBoard hook module loaded");

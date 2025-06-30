@@ -149,6 +149,30 @@ export class Player implements PlayerData {
     return mapToUse;
   }
 
+  public canGoNextRoom(): boolean {
+    const exitDirection = this.getExitDirection();
+    if (!exitDirection) {
+      return false;
+    }
+
+    const currentMap = this.getCurrentMap();
+    if (!currentMap) {
+      return false;
+    }
+
+    const linkageMap: { [key: string]: "up" | "down" | "left" | "right" } = {
+      N: "up",
+      E: "right",
+      S: "down",
+      W: "left",
+    };
+
+    const nextMapId = currentMap.exitLink[linkageMap[exitDirection]];
+
+    // The action is possible only if an exit link exists.
+    return !!nextMapId;
+  }
+
   /**
    * Checks if the player can mine a given cell.
    * @param cell The cell to check.
@@ -427,26 +451,31 @@ export class Player implements PlayerData {
           entranceLinkage = "right";
         }
 
+        const currentMap = this.getCurrentMap();
+        if (!currentMap) {
+          throw new Error("Current map not found while discovering new room.");
+        }
+
+        // Prevent discovering a new room if an exit is already linked.
+        if (
+          currentMap.exitLink[exitLinkage as "up" | "down" | "left" | "right"]
+        ) {
+          return this;
+        }
+
         const result = await generateNextRoom(exitDirection);
         if (result) {
           const { roomData } = result;
           const newMap = Map.fromAPIData(roomData);
 
-          const currentMap = this.getCurrentMap();
-          if (!currentMap) {
-            throw new Error(
-              "Current map not found while discovering new room."
-            );
-          }
-
           // Link current map to the new room and vice-versa
           const updatedCurrentMap = currentMap.withExitLink(
             exitLinkage as "up" | "down" | "left" | "right",
-            newMap.map
+            newMap.personalID
           );
           const updatedNewMap = newMap.withExitLink(
             entranceLinkage as "up" | "down" | "left" | "right",
-            currentMap.map
+            currentMap.personalID
           );
 
           // Update the player's list of maps
@@ -493,7 +522,7 @@ export class Player implements PlayerData {
    * Moves the player to the next room if they are on a linked exit.
    * @returns A new Player instance with an updated position and currentMap, or the same instance if no move occurs.
    */
-  public moveToRoom(): Player {
+  public goToNextRoom(): Player {
     const exitDirection = this.getExitDirection();
     if (!exitDirection) return this;
 
@@ -519,7 +548,7 @@ export class Player implements PlayerData {
       return this;
     }
 
-    const nextMapData = this.maps.find((m) => m.map === nextMapId);
+    const nextMapData = this.maps.find((m) => m.personalID === nextMapId);
     if (!nextMapData) return this;
 
     const newPosition = newPositionMap[exitDirection];
